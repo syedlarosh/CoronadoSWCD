@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Map - Boundary & Parcels</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F5F7FA;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #E5E7EB;
+            flex-wrap: wrap;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #2F3E9E;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            font-size: 12px;
+            font-weight: 400;
+            color: #6B7280;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .controls select,
+        .controls input {
+            padding: 6px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            background: white;
+            height: 36px;
+        }
+
+        .controls button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 36px;
+            white-space: nowrap;
+        }
+
+        .controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-inprogress {
+            background: #FF8C00;
+            color: white;
+        }
+
+        .btn-completed {
+            background: #10B981;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #6B7280;
+            color: white;
+        }
+
+        .btn-save {
+            background: #2F3E9E;
+            color: white;
+        }
+
+        .btn-clear {
+            background: #EF4444;
+            color: white;
+        }
+
+        #main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 16px;
+            padding: 16px;
+        }
+
+        #sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            overflow-y: auto;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            flex-shrink: 0;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #2F3E9E;
+            border-radius: 10px;
+        }
+
+        #sidebar h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #2F3E9E;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #F9FAFE;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #E5E7EB;
+        }
+
+        .stat-card .stat-value {
+            font-size: 22px;
+            font-weight: 800;
+            display: block;
+        }
+
+        .stat-card .stat-label {
+            font-size: 10px;
+            color: #6B7280;
+            font-weight: 500;
+        }
+
+        .stat-card.inprogress .stat-value {
+            color: #FF8C00;
+        }
+
+        .stat-card.completed .stat-value {
+            color: #10B981;
+        }
+
+        .filter-group {
+            margin-bottom: 12px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #4B5563;
+            margin-bottom: 4px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            background: white;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #2F3E9E;
+            box-shadow: 0 0 0 3px rgba(47, 62, 158, 0.1);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .filter-actions button {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            background: white;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-actions button:hover {
+            background: #F9FAFE;
+            border-color: #2F3E9E;
+        }
+
+        #map-container {
+            flex: 1;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            position: relative;
+            min-height: 400px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            background: #EFF3F8;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 10px 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            z-index: 400;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid #E5E7EB;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
+
+        .legend-color.inprogress {
+            background: #FF8C00;
+        }
+
+        .legend-color.completed {
+            background: #10B981;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            background: #2F3E9E;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            animation: slideUp 0.3s ease;
+            max-width: 400px;
+        }
+
+        .toast.error {
+            background: #6B7280;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(47, 62, 158, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(8px);
+        }
+
+        .loading-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #E5E7EB;
+            border-top-color: #2F3E9E;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        .loading-card p {
+            font-family: 'Inter', sans-serif;
+            color: #1F2937;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* 🔴 CUSTOM SUGGESTIONS DROPDOWN - NEECHE AUR SCROLL */
+        .suggestions-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            margin-top: 4px;
+        }
+
+        .suggestions-dropdown.show {
+            display: block;
+        }
+
+        .suggestions-dropdown .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            color: #1F2937;
+            border-bottom: 1px solid #F3F4F6;
+            transition: background 0.15s;
+        }
+
+        .suggestions-dropdown .suggestion-item:hover {
+            background: #EFF3F8;
+            color: #2F3E9E;
+        }
+
+        .suggestions-dropdown .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 🔴 SCROLLBAR STYLES */
+        .suggestions-dropdown::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .suggestions-dropdown::-webkit-scrollbar-track {
+            background: #F3F4F6;
+            border-radius: 10px;
+        }
+
+        .suggestions-dropdown::-webkit-scrollbar-thumb {
+            background: #2F3E9E;
+            border-radius: 10px;
+        }
+
+        .suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+            background: #1a1a4e;
+        }
+
+        @media (max-width: 1024px) {
+            #sidebar {
+                width: 260px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #main {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            #sidebar {
+                width: 100%;
+                max-height: 280px;
+            }
+
+            header {
+                padding: 10px 16px;
+            }
+
+            .logo {
+                font-size: 18px;
+            }
+
+            .controls button {
+                font-size: 11px;
+                padding: 4px 10px;
+                height: 30px;
+            }
+
+            .controls select {
+                font-size: 11px;
+                padding: 4px 8px;
+                height: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #sidebar {
+                max-height: 200px;
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px;
+            }
+
+            .stat-card {
+                padding: 6px;
+            }
+
+            .stat-card .stat-value {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <header>
+            <div class="logo">🏘️ Property Map <span>Boundary & Parcels</span></div>
+            <div class="controls">
+                <select id="layerSelector">
+                    <option value="both">📊 Both Layers</option>
+                    <option value="boundary">📐 Boundary Only</option>
+                    <option value="parcels">📦 Parcels Only</option>
+                </select>
+                <button id="markInProgress" class="btn-inprogress">⏳ IN PROGRESS</button>
+                <button id="markCompleted" class="btn-completed">✅ COMPLETED</button>
+                <button id="clearSelection" class="btn-clear">✖️ Clear</button>
+                <button id="resetChanges" class="btn-reset">↩️ Reset</button>
+                <button id="saveChanges" class="btn-save">💾 Save</button>
+            </div>
+        </header>
+
+        <div id="main">
+            <div id="sidebar">
+                <div class="stats">
+                    <h3>📊 Statistics</h3>
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <span class="stat-value" id="totalCount">0</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat-card inprogress">
+                            <span class="stat-value" id="inprogressCount">0</span>
+                            <span class="stat-label">IN PROGRESS</span>
+                        </div>
+                        <div class="stat-card completed">
+                            <span class="stat-value" id="completedCount">0</span>
+                            <span class="stat-label">COMPLETED</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filters">
+                    <h3>🔍 Filters</h3>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="statusFilter" onchange="applyFilters()">
+                            <option value="ALL">All</option>
+                            <option value="IN PROGRESS">⏳ IN PROGRESS</option>
+                            <option value="COMPLETED">✅ COMPLETED</option>
+                        </select>
+                    </div>
+
+                    <!-- 🔴 OWNER FILTER WITH CUSTOM DROPDOWN -->
+                    <div class="filter-group">
+                        <label>Owner</label>
+                        <div class="suggestions-wrapper">
+                            <input type="text" id="ownerFilter" placeholder="Search owner..." autocomplete="off"
+                                oninput="showSuggestions('owner')" onfocus="showSuggestions('owner')">
+                            <div class="suggestions-dropdown" id="ownerSuggestions"></div>
+                        </div>
+                    </div>
+
+                    <!-- 🔴 PARCEL FILTER WITH CUSTOM DROPDOWN -->
+                    <div class="filter-group">
+                        <label>Parcel</label>
+                        <div class="suggestions-wrapper">
+                            <input type="text" id="parcelFilter" placeholder="Search parcel..." autocomplete="off"
+                                oninput="showSuggestions('parcel')" onfocus="showSuggestions('parcel')">
+                            <div class="suggestions-dropdown" id="parcelSuggestions"></div>
+                        </div>
+                    </div>
+
+                    <!-- 🔴 ADDRESS FILTER WITH CUSTOM DROPDOWN -->
+                    <div class="filter-group">
+                        <label>Address</label>
+                        <div class="suggestions-wrapper">
+                            <input type="text" id="addressFilter" placeholder="Search address..." autocomplete="off"
+                                oninput="showSuggestions('address')" onfocus="showSuggestions('address')">
+                            <div class="suggestions-dropdown" id="addressSuggestions"></div>
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button id="clearFiltersBtn" onclick="clearAllFilters()">✖️ Clear All</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="map-container">
+                <div id="map"></div>
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <div class="legend-color inprogress"></div>
+                        <span>IN PROGRESS</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color completed"></div>
+                        <span>COMPLETED</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay">
+        <div class="loading-card">
+            <div class="spinner"></div>
+            <p id="loadingText">Loading data...</p>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const CONFIG = {
+            BOUNDARY_URL: 'Boundary.geojson',
+            PARCELS_URL: 'Parcels.geojson',
+            SHEET_URL: 'https://docs.google.com/spreadsheets/d/1rB5ra-QHYh3QOPHu0rvRpkVs9ackeFK4HB1buB2oxKI/export?format=csv&gid=0',
+            SHEET_WRITE_URL: 'https://script.google.com/macros/s/AKfycbwvtOvfVJUcyIyM6gPK2oqeWHN2EZVo5uB8nTnmP5ILh4ijYlbg4XevriX2OkJ1yDZW/exec',
+            DEFAULT_VIEW: [38, -96],
+            DEFAULT_ZOOM: 5,
+            COLORS: {
+                'IN PROGRESS': '#FF8C00',
+                'COMPLETED': '#10B981',
+                HIGHLIGHT: '#FF0000'
+            }
+        };
+
+        // ============================================
+        // STATE
+        // ============================================
+        let map = null;
+        let currentLayer = null;
+        let allFeatures = [];
+        let selectedFeatures = [];
+        let originalData = new Map();
+        let hasChanges = false;
+        let isDataLoaded = false;
+
+        // 🔴 DATA STORE FOR SUGGESTIONS
+        let allOwners = [];
+        let allParcels = [];
+        let allAddresses = [];
+
+        // ============================================
+        // LOADING / TOAST FUNCTIONS
+        // ============================================
+        function showLoading(message) {
+            document.getElementById('loadingText').textContent = message;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function showToast(message, isError = false) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ============================================
+        // GOOGLE SHEETS - READ (CSV)
+        // ============================================
+        async function loadFromSheet() {
+            try {
+                const response = await fetch(CONFIG.SHEET_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const csv = await response.text();
+                const rows = csv.split('\n').filter(row => row.trim());
+
+                if (rows.length < 2) return new Map();
+
+                const headers = rows[0].split(',').map(h => h.trim().toUpperCase());
+                const data = new Map();
+
+                for (let i = 1; i < rows.length; i++) {
+                    const cols = parseCSVRow(rows[i]);
+                    if (cols.length >= 5) {
+                        const address = cols[0]?.trim() || '';
+                        const signer = cols[1]?.trim() || '';
+                        const owner = cols[2]?.trim() || '';
+                        const parcel = cols[3]?.trim() || '';
+                        const status = cols[4]?.trim() || 'IN PROGRESS';
+                        const key = parcel || address;
+
+                        if (key && key !== 'PARCEL' && key !== 'ADDRESS' && key !== 'parcel' && key !== 'address') {
+                            data.set(key, { address, signer, owner, parcel, status });
+                        }
+                    }
+                }
+                return data;
+            } catch (error) {
+                console.error('Error loading from sheet:', error);
+                return null;
+            }
+        }
+
+        function parseCSVRow(row) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < row.length; i++) {
+                const ch = row[i];
+                if (ch === '"') inQuotes = !inQuotes;
+                else if (ch === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += ch;
+                }
+            }
+            result.push(current.trim());
+            return result.map(v => v.replace(/^"|"$/g, ''));
+        }
+
+        // ============================================
+        // GOOGLE SHEETS - SAVE
+        // ============================================
+        async function saveToSheet(data) {
+            try {
+                showLoading('Saving to sheet...');
+
+                const payload = {
+                    action: 'update',
+                    data: Array.from(data.entries()).map(([key, value]) => ({ key, ...value }))
+                };
+
+                await fetch(CONFIG.SHEET_WRITE_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                showToast('✅ Save request sent successfully!');
+                hasChanges = false;
+                hideLoading();
+
+            } catch (error) {
+                console.error('Save error:', error);
+                hideLoading();
+                showToast('❌ Save failed! Check console.', true);
+            }
+        }
+
+        // ============================================
+        // MAP FUNCTIONS
+        // ============================================
+        function initMap() {
+            if (map) {
+                map.remove();
+                map = null;
+            }
+            map = L.map('map', {
+                zoomControl: true,
+                fadeAnimation: true,
+                zoomAnimation: true
+            }).setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap & CartoDB',
+                maxZoom: 19
+            }).addTo(map);
+
+            setTimeout(() => {
+                if (map) map.invalidateSize();
+            }, 500);
+
+            window.addEventListener('resize', () => {
+                if (map) setTimeout(() => map.invalidateSize(), 200);
+            });
+        }
+
+        function loadGeoJSON(url, layerType) {
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(geoData => {
+                    geoData.features.forEach(f => {
+                        f.properties._layerType = layerType;
+                        if (!f.properties.Status) f.properties.Status = 'IN PROGRESS';
+                    });
+                    return geoData;
+                });
+        }
+
+        // ============================================
+        // loadAllLayers() - With Autocomplete
+        // ============================================
+        async function loadAllLayers() {
+            try {
+                showLoading('Loading data...');
+
+                const [boundaryData, parcelsData] = await Promise.all([
+                    loadGeoJSON(CONFIG.BOUNDARY_URL, 'boundary'),
+                    loadGeoJSON(CONFIG.PARCELS_URL, 'parcels')
+                ]);
+
+                const sheetData = await loadFromSheet();
+
+                // Sirf undefined features filter karo
+                function isValidFeature(f) {
+                    const props = f.properties || {};
+                    const hasValue = Object.values(props).some(v => {
+                        return v && v !== '' && v !== 'undefined' && v !== 'null' && v !== null;
+                    });
+                    return hasValue;
+                }
+
+                let boundaryFeatures = boundaryData.features.filter(isValidFeature);
+                let parcelsFeatures = parcelsData.features.filter(isValidFeature);
+
+                // Emergency fallback
+                if (boundaryFeatures.length === 0) {
+                    boundaryFeatures = boundaryData.features;
+                }
+                if (parcelsFeatures.length === 0) {
+                    parcelsFeatures = parcelsData.features;
+                }
+
+                allFeatures = [...boundaryFeatures, ...parcelsFeatures];
+
+                console.log('✅ Boundary Features:', boundaryFeatures.length);
+                console.log('✅ Parcels Features:', parcelsFeatures.length);
+                console.log('✅ Total Features:', allFeatures.length);
+
+                if (sheetData && sheetData.size > 0) {
+                    allFeatures.forEach(f => {
+                        const key = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f
+                            .properties.address || '';
+                        if (key && sheetData.has(key)) {
+                            f.properties.Status = sheetData.get(key).status;
+                        }
+                    });
+                    originalData = new Map(sheetData);
+                } else {
+                    allFeatures.forEach(f => {
+                        const key = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f
+                            .properties.address || '';
+                        if (key) {
+                            originalData.set(key, {
+                                status: f.properties.Status || 'IN PROGRESS',
+                                address: f.properties.ADDRESS || f.properties.address || '',
+                                signer: f.properties.SIGNER || f.properties.signer || '',
+                                owner: f.properties.OWNER || f.properties.owner || '',
+                                parcel: f.properties.PARCEL || f.properties.parcel || ''
+                            });
+                        }
+                    });
+                }
+
+                isDataLoaded = true;
+                renderLayer('both');
+                updateStats();
+
+                // 🔴 AUTOSUGGESTIONS UPDATE
+                updateAutocompleteSuggestions();
+
+                hideLoading();
+                showToast('✅ Data loaded successfully!');
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                hideLoading();
+                showToast('❌ Failed to load data: ' + error.message, true);
+            }
+        }
+
+        // ============================================
+        // 🔴 UPDATE SUGGESTIONS DATA
+        // ============================================
+        function updateAutocompleteSuggestions() {
+            const parcels = allFeatures.filter(f => f.properties._layerType === 'parcels');
+
+            const ownersSet = new Set();
+            const parcelsSet = new Set();
+            const addressesSet = new Set();
+
+            parcels.forEach(f => {
+                const p = f.properties;
+                if (p.OWNER || p.owner) ownersSet.add((p.OWNER || p.owner).toString());
+                if (p.PARCEL || p.parcel) parcelsSet.add((p.PARCEL || p.parcel).toString());
+                if (p.ADDRESS || p.address) addressesSet.add((p.ADDRESS || p.address).toString());
+            });
+
+            allOwners = Array.from(ownersSet).sort();
+            allParcels = Array.from(parcelsSet).sort();
+            allAddresses = Array.from(addressesSet).sort();
+
+            console.log('✅ Autocomplete updated:', {
+                owners: allOwners.length,
+                parcels: allParcels.length,
+                addresses: allAddresses.length
+            });
+        }
+
+        // ============================================
+        // 🔴 SHOW SUGGESTIONS - NEECHE AUR SCROLL KE SAATH
+        // ============================================
+        function showSuggestions(type) {
+            let input, suggestionsDiv, data;
+
+            if (type === 'owner') {
+                input = document.getElementById('ownerFilter');
+                suggestionsDiv = document.getElementById('ownerSuggestions');
+                data = allOwners;
+            } else if (type === 'parcel') {
+                input = document.getElementById('parcelFilter');
+                suggestionsDiv = document.getElementById('parcelSuggestions');
+                data = allParcels;
+            } else if (type === 'address') {
+                input = document.getElementById('addressFilter');
+                suggestionsDiv = document.getElementById('addressSuggestions');
+                data = allAddresses;
+            }
+
+            const value = input.value.toLowerCase().trim();
+
+            // 🔴 Filter suggestions
+            let filtered = [];
+            if (value) {
+                filtered = data.filter(item => item.toLowerCase().includes(value));
+            } else {
+                // 🔴 Agar kuch type nahi kiya toh sab dikhao (limit 20)
+                filtered = data.slice(0, 20);
+            }
+
+            // 🔴 Show suggestions
+            if (filtered.length > 0) {
+                suggestionsDiv.innerHTML = '';
+                filtered.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.textContent = item;
+                    div.onmousedown = function(e) {
+                        e.preventDefault(); // Focus nahi hatna chahiye
+                        input.value = item;
+                        suggestionsDiv.classList.remove('show');
+                        applyFilters();
+                        setTimeout(() => {
+                            suggestionsDiv.classList.remove('show');
+                        }, 100);
+                    };
+                    suggestionsDiv.appendChild(div);
+                });
+                suggestionsDiv.classList.add('show');
+            } else {
+                suggestionsDiv.classList.remove('show');
+            }
+
+            // 🔴 Filter apply karo (live filter)
+            if (window.filterTimeout) {
+                clearTimeout(window.filterTimeout);
+            }
+            window.filterTimeout = setTimeout(function() {
+                applyFilters();
+            }, 300);
+        }
+
+        // ============================================
+        // 🔴 CLICK OUTSIDE - Suggestions hide karo
+        // ============================================
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.suggestions-wrapper')) {
+                document.querySelectorAll('.suggestions-dropdown').forEach(el => {
+                    el.classList.remove('show');
+                });
+            }
+        });
+
+        // ============================================
+        // 🔴 ESC KEY - Suggestions hide karo
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.suggestions-dropdown').forEach(el => {
+                    el.classList.remove('show');
+                });
+            }
+        });
+
+        function renderLayer(layerType) {
+            if (!isDataLoaded || allFeatures.length === 0) return;
+            if (currentLayer) {
+                map.removeLayer(currentLayer);
+                currentLayer = null;
+            }
+
+            let featuresToRender = allFeatures;
+            if (layerType === 'boundary') {
+                featuresToRender = allFeatures.filter(f => f.properties._layerType === 'boundary');
+            } else if (layerType === 'parcels') {
+                featuresToRender = allFeatures.filter(f => f.properties._layerType === 'parcels');
+            }
+
+            const statusFilter = document.getElementById('statusFilter').value;
+            const ownerFilter = document.getElementById('ownerFilter').value.toLowerCase().trim();
+            const parcelFilter = document.getElementById('parcelFilter').value.toLowerCase().trim();
+            const addressFilter = document.getElementById('addressFilter').value.toLowerCase().trim();
+
+            featuresToRender = featuresToRender.filter(f => {
+                const p = f.properties;
+                const statusMatch = statusFilter === 'ALL' || p.Status === statusFilter;
+                const ownerMatch = !ownerFilter || (p.OWNER || p.owner || '').toLowerCase().includes(ownerFilter);
+                const parcelMatch = !parcelFilter || (p.PARCEL || p.parcel || '').toLowerCase().includes(parcelFilter);
+                const addressMatch = !addressFilter || (p.ADDRESS || p.address || '').toLowerCase().includes(
+                    addressFilter);
+                return statusMatch && ownerMatch && parcelMatch && addressMatch;
+            });
+
+            if (featuresToRender.length === 0) {
+                showToast('⚠️ No features match the filters', true);
+                return;
+            }
+
+            currentLayer = L.geoJSON({
+                type: 'FeatureCollection',
+                features: featuresToRender
+            }, {
+                style: getFeatureStyle,
+                onEachFeature: onEachFeature
+            }).addTo(map);
+
+            try {
+                const bounds = currentLayer.getBounds();
+                if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 40] });
+            } catch (e) {
+                map.setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM);
+            }
+            updateStats();
+        }
+
+        function getFeatureStyle(feature) {
+            const status = feature.properties.Status || 'IN PROGRESS';
+            let color;
+            if (status === 'IN PROGRESS') {
+                color = CONFIG.COLORS['IN PROGRESS'];
+            } else if (status === 'COMPLETED') {
+                color = CONFIG.COLORS['COMPLETED'];
+            } else {
+                color = '#6B7280';
+            }
+            const isSelected = selectedFeatures.includes(feature);
+            return {
+                fillColor: color,
+                color: isSelected ? CONFIG.COLORS.HIGHLIGHT : '#333333',
+                weight: isSelected ? 3 : 1.5,
+                opacity: 1,
+                fillOpacity: isSelected ? 0.85 : 0.6,
+                dashArray: feature.properties._layerType === 'boundary' ? null : '5, 5'
+            };
+        }
+
+        function onEachFeature(feature, layer) {
+            layer.feature = feature;
+            layer.bindPopup(createPopupContent(feature), { maxWidth: 350 });
+
+            layer.on('click', function(e) {
+                if (e.target.options.fillOpacity > 0) {
+                    const idx = selectedFeatures.indexOf(feature);
+                    if (idx > -1) {
+                        selectedFeatures.splice(idx, 1);
+                    } else {
+                        selectedFeatures.push(feature);
+                    }
+                    refreshLayerStyles();
+                    this.openPopup();
+                }
+            });
+
+            layer.on('mouseover', function(e) {
+                if (!selectedFeatures.includes(feature)) {
+                    this.setStyle({
+                        weight: 4,
+                        fillOpacity: 0.85,
+                        color: CONFIG.COLORS.HIGHLIGHT
+                    });
+                }
+                this.bringToFront();
+            });
+
+            layer.on('mouseout', function(e) {
+                if (!selectedFeatures.includes(feature)) {
+                    refreshLayerStyles();
+                }
+            });
+
+            layer.on('mouseleave', function(e) {
+                if (!selectedFeatures.includes(feature)) {
+                    refreshLayerStyles();
+                }
+            });
+        }
+
+        function refreshLayerStyles() {
+            if (!currentLayer) return;
+            currentLayer.eachLayer(layer => {
+                if (layer.feature) {
+                    const isSelected = selectedFeatures.includes(layer.feature);
+                    const style = getFeatureStyle(layer.feature);
+                    if (isSelected) {
+                        style.weight = 3;
+                        style.color = CONFIG.COLORS.HIGHLIGHT;
+                        style.fillOpacity = 0.85;
+                    }
+                    layer.setStyle(style);
+                }
+            });
+        }
+
+        function createPopupContent(feature) {
+            const props = feature.properties;
+            const status = props.Status || 'IN PROGRESS';
+            let statusColor;
+            if (status === 'IN PROGRESS') {
+                statusColor = CONFIG.COLORS['IN PROGRESS'];
+            } else if (status === 'COMPLETED') {
+                statusColor = CONFIG.COLORS['COMPLETED'];
+            } else {
+                statusColor = '#6B7280';
+            }
+            const key = props.PARCEL || props.parcel || props.ADDRESS || props.address || '';
+
+            let html = `
+                <div style="min-width:200px;font-family:'Inter',sans-serif;">
+                    <div style="background:#2F3E9E;color:white;padding:8px 12px;border-radius:6px 6px 0 0;font-weight:600;font-size:13px;">
+                        📋 Property Details
+                    </div>
+                    <div style="padding:12px;">
+                        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            `;
+
+            const fields = [
+                { label: 'Address', key: 'ADDRESS' },
+                { label: 'Signer', key: 'SIGNER' },
+                { label: 'Owner', key: 'OWNER' },
+                { label: 'Parcel', key: 'PARCEL' }
+            ];
+
+            fields.forEach(f => {
+                let value = props[f.key] || props[f.key.toLowerCase()] || '';
+                if (value) {
+                    html += `
+                        <tr>
+                            <td style="padding:4px 8px;font-weight:600;color:#4B5563;">${f.label}:</td>
+                            <td style="padding:4px 8px;">${value}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            html += `
+                        <tr>
+                            <td style="padding:4px 8px;font-weight:600;color:#4B5563;">Status:</td>
+                            <td style="padding:4px 8px;">
+                                <span style="color:${statusColor};font-weight:bold;">${status}</span>
+                            </td>
+                        </tr>
+                        </table>
+                        <div style="margin-top:10px;padding-top:8px;border-top:1px solid #E5E7EB;display:flex;gap:8px;justify-content:center;">
+                            <button onclick="updateFeatureStatus('${key}','IN PROGRESS')" 
+                                    style="background:#FF8C00;color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;">
+                                ⏳ IN PROGRESS
+                            </button>
+                            <button onclick="updateFeatureStatus('${key}','COMPLETED')" 
+                                    style="background:#10B981;color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;">
+                                ✅ COMPLETED
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        // ============================================
+        // GLOBAL FUNCTIONS (for popup buttons)
+        // ============================================
+        window.updateFeatureStatus = function(key, status) {
+            const feature = allFeatures.find(f => {
+                const fKey = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f.properties
+                    .address || '';
+                return fKey === key;
+            });
+            if (feature) {
+                feature.properties.Status = status;
+                hasChanges = true;
+                renderLayer(document.getElementById('layerSelector').value);
+                updateStats();
+                showToast(`✅ Status updated to ${status}`);
+            } else {
+                showToast('❌ Feature not found!', true);
+            }
+        };
+
+        // ============================================
+        // UI FUNCTIONS
+        // ============================================
+        function updateStats() {
+            // 🔴 FIX: Sirf Parcels features ko count karo (Boundary ko ignore)
+            const parcelsFeatures = allFeatures.filter(f => f.properties._layerType === 'parcels');
+
+            const total = parcelsFeatures.length;
+            const inprogress = parcelsFeatures.filter(f => f.properties.Status === 'IN PROGRESS').length;
+            const completed = parcelsFeatures.filter(f => f.properties.Status === 'COMPLETED').length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('inprogressCount').textContent = inprogress;
+            document.getElementById('completedCount').textContent = completed;
+
+            console.log('📊 Stats - Total:', total, '| IN PROGRESS:', inprogress, '| COMPLETED:', completed);
+        }
+
+        // ============================================
+        // applyFilters()
+        // ============================================
+        function applyFilters() {
+            renderLayer(document.getElementById('layerSelector').value);
+        }
+
+        // ============================================
+        // CLEAR ALL FILTERS
+        // ============================================
+        function clearAllFilters() {
+            document.getElementById('statusFilter').value = 'ALL';
+            document.getElementById('ownerFilter').value = '';
+            document.getElementById('parcelFilter').value = '';
+            document.getElementById('addressFilter').value = '';
+
+            document.querySelectorAll('.suggestions-dropdown').forEach(el => {
+                el.classList.remove('show');
+            });
+
+            applyFilters();
+        }
+
+        function markSelectedAs(status) {
+            if (selectedFeatures.length === 0) {
+                showToast('⚠️ Please select at least one feature', true);
+                return;
+            }
+            selectedFeatures.forEach(f => f.properties.Status = status);
+            hasChanges = true;
+            renderLayer(document.getElementById('layerSelector').value);
+            updateStats();
+            showToast(`✅ ${selectedFeatures.length} marked as ${status}`);
+            selectedFeatures = [];
+        }
+
+        function clearSelection() {
+            selectedFeatures = [];
+            refreshLayerStyles();
+            showToast('✖️ Selection cleared');
+        }
+
+        function resetChanges() {
+            if (!hasChanges) {
+                showToast('ℹ️ No changes to reset');
+                return;
+            }
+            allFeatures.forEach(f => {
+                const key = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f.properties
+                    .address || '';
+                if (key && originalData.has(key)) {
+                    f.properties.Status = originalData.get(key).status;
+                }
+            });
+            hasChanges = false;
+            selectedFeatures = [];
+            renderLayer(document.getElementById('layerSelector').value);
+            updateStats();
+            showToast('🔄 Changes reset successfully');
+        }
+
+        function saveChanges() {
+            if (!hasChanges) {
+                showToast('ℹ️ No changes to save');
+                return;
+            }
+            const dataToSave = new Map();
+            allFeatures.forEach(f => {
+                const key = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f.properties
+                    .address || '';
+                if (key) {
+                    dataToSave.set(key, {
+                        address: f.properties.ADDRESS || f.properties.address || '',
+                        signer: f.properties.SIGNER || f.properties.signer || '',
+                        owner: f.properties.OWNER || f.properties.owner || '',
+                        parcel: f.properties.PARCEL || f.properties.parcel || '',
+                        status: f.properties.Status
+                    });
+                }
+            });
+            saveToSheet(dataToSave);
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveChanges();
+            }
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                resetChanges();
+            }
+            if (e.key === 'Escape') {
+                clearSelection();
+            }
+        });
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            loadAllLayers();
+
+            document.getElementById('layerSelector').addEventListener('change', applyFilters);
+
+            document.getElementById('clearFiltersBtn').addEventListener('click', clearAllFilters);
+
+            document.getElementById('markInProgress').addEventListener('click', () => markSelectedAs('IN PROGRESS'));
+            document.getElementById('markCompleted').addEventListener('click', () => markSelectedAs('COMPLETED'));
+            document.getElementById('clearSelection').addEventListener('click', clearSelection);
+            document.getElementById('resetChanges').addEventListener('click', resetChanges);
+            document.getElementById('saveChanges').addEventListener('click', saveChanges);
+        });
+
+        // ============================================
+        // HANDLE ERRORS
+        // ============================================
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e);
+            showToast('⚠️ An error occurred. Check console.', true);
+        });
+
+        console.log('🏘️ Property Map App Initialized');
+        console.log('📋 Google Sheets URL:', CONFIG.SHEET_WRITE_URL);
+        console.log('📂 Boundary URL:', CONFIG.BOUNDARY_URL);
+        console.log('📂 Parcels URL:', CONFIG.PARCELS_URL);
+    </script>
+
+</body>
+
+</html>
