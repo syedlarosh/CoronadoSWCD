@@ -1,1342 +1,1715 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
+
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property Map - Boundary & Parcels</title>
+
+    <title>Property Map - Final Fixed</title>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+
     <style>
         * {
+
             margin: 0;
+
             padding: 0;
-            box-sizing: border-box;
+
+            box-sizing: border-box
         }
+
+
 
         body {
+
             font-family: 'Inter', sans-serif;
+
             background: #F5F7FA;
+
             height: 100vh;
-            overflow: hidden;
+
+            overflow: hidden
         }
+
+
 
         #app {
+
             display: flex;
+
             flex-direction: column;
-            height: 100vh;
+
+            height: 100vh
         }
+
+
 
         header {
+
             background: white;
+
             padding: 12px 24px;
+
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
+
             border-bottom: 1px solid #E5E7EB;
+
             flex-wrap: wrap;
+
             gap: 10px;
-            z-index: 10;
+
+            z-index: 10
         }
+
+
 
         .logo {
+
             font-size: 22px;
+
             font-weight: 800;
+
             color: #2F3E9E;
+
             display: flex;
+
             align-items: center;
-            gap: 10px;
+
+            gap: 10px
         }
+
+
 
         .logo span {
+
             font-size: 12px;
+
             font-weight: 400;
-            color: #6B7280;
+
+            color: #6B7280
         }
+
+
 
         .controls {
+
             display: flex;
+
             gap: 8px;
+
             align-items: center;
-            flex-wrap: wrap;
+
+            flex-wrap: wrap
         }
 
-        .controls select,
-        .controls input {
-            padding: 6px 12px;
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 12px;
-            background: white;
-            height: 36px;
-        }
+
 
         .controls button {
+
             padding: 6px 14px;
+
             border: none;
+
             border-radius: 8px;
-            font-family: 'Inter', sans-serif;
+
             font-weight: 600;
+
             font-size: 12px;
+
             cursor: pointer;
-            transition: all 0.2s;
+
+            transition: all .2s;
+
             height: 36px;
-            white-space: nowrap;
+
+            white-space: nowrap
         }
+
+
 
         .controls button:hover {
+
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .15)
         }
+
+
 
         .btn-inprogress {
+
             background: #FF8C00;
-            color: white;
+
+            color: white
         }
+
+
 
         .btn-completed {
+
             background: #10B981;
-            color: white;
+
+            color: white
         }
+
+
 
         .btn-reset {
+
             background: #6B7280;
-            color: white;
+
+            color: white
         }
+
+
 
         .btn-save {
+
             background: #2F3E9E;
-            color: white;
+
+            color: white
         }
+
+
 
         .btn-clear {
+
             background: #EF4444;
-            color: white;
+
+            color: white
         }
+
+
 
         #main {
+
             display: flex;
+
             flex: 1;
+
             overflow: hidden;
+
             gap: 16px;
-            padding: 16px;
+
+            padding: 16px
         }
+
+
 
         #sidebar {
-            width: 300px;
+
+            width: 340px;
+
             background: white;
+
             border-radius: 16px;
+
             padding: 16px 20px;
+
             overflow-y: auto;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-            flex-shrink: 0;
+
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+
+            flex-shrink: 0
         }
 
-        #sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
 
-        #sidebar::-webkit-scrollbar-thumb {
-            background: #2F3E9E;
-            border-radius: 10px;
-        }
 
         #sidebar h3 {
+
             font-size: 13px;
+
             font-weight: 700;
+
             color: #2F3E9E;
+
             margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+
+            text-transform: uppercase
         }
+
+
 
         .stat-grid {
+
             display: grid;
+
             grid-template-columns: repeat(3, 1fr);
+
             gap: 8px;
-            margin-bottom: 20px;
+
+            margin-bottom: 20px
         }
+
+
 
         .stat-card {
+
             background: #F9FAFE;
+
             border-radius: 10px;
+
             padding: 10px;
+
             text-align: center;
-            border: 1px solid #E5E7EB;
+
+            border: 1px solid #E5E7EB
         }
+
+
 
         .stat-card .stat-value {
+
             font-size: 22px;
+
             font-weight: 800;
-            display: block;
+
+            display: block
         }
+
+
 
         .stat-card .stat-label {
+
             font-size: 10px;
+
             color: #6B7280;
-            font-weight: 500;
+
+            font-weight: 500
         }
+
+
 
         .stat-card.inprogress .stat-value {
-            color: #FF8C00;
+
+            color: #FF8C00
         }
+
+
 
         .stat-card.completed .stat-value {
-            color: #10B981;
+
+            color: #10B981
         }
+
+
 
         .filter-group {
-            margin-bottom: 12px;
+
+            margin-bottom: 12px
         }
+
+
 
         .filter-group label {
+
             display: block;
+
             font-size: 11px;
+
             font-weight: 600;
+
             color: #4B5563;
-            margin-bottom: 4px;
+
+            margin-bottom: 4px
         }
+
+
 
         .filter-group input,
+
         .filter-group select {
+
             width: 100%;
-            padding: 6px 10px;
+
+            padding: 8px 10px;
+
             border: 1px solid #E5E7EB;
+
             border-radius: 8px;
+
             font-family: 'Inter', sans-serif;
+
             font-size: 12px;
-            background: white;
+
+            background: white
         }
+
+
 
         .filter-group input:focus,
+
         .filter-group select:focus {
+
             outline: none;
+
             border-color: #2F3E9E;
-            box-shadow: 0 0 0 3px rgba(47, 62, 158, 0.1);
+
+            box-shadow: 0 0 0 3px rgba(47, 62, 158, .1)
         }
+
+
 
         .filter-actions {
+
             display: flex;
+
             gap: 8px;
-            margin-top: 10px;
+
+            margin-top: 10px
         }
+
+
 
         .filter-actions button {
+
             flex: 1;
+
             padding: 6px;
+
             border: 1px solid #E5E7EB;
+
             border-radius: 8px;
+
             background: white;
+
             font-size: 11px;
+
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
+
+            cursor: pointer
         }
+
+
 
         .filter-actions button:hover {
+
             background: #F9FAFE;
-            border-color: #2F3E9E;
+
+            border-color: #2F3E9E
         }
+
+
 
         #map-container {
+
             flex: 1;
+
             border-radius: 16px;
+
             overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-            position: relative;
-            min-height: 400px;
+
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+
+            position: relative
         }
+
+
 
         #map {
+
             width: 100%;
+
             height: 100%;
-            min-height: 400px;
-            background: #EFF3F8;
+
+            background: #EFF3F8
         }
+
+
 
         .map-legend {
+
             position: absolute;
+
             bottom: 20px;
+
             left: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
+
+            background: rgba(255, 255, 255, .95);
+
             padding: 10px 16px;
+
             border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+
             z-index: 400;
+
             font-size: 11px;
-            font-weight: 500;
-            border: 1px solid #E5E7EB;
+
+            border: 1px solid #E5E7EB
         }
+
+
 
         .legend-item {
+
             display: flex;
+
             align-items: center;
+
             gap: 8px;
-            margin-bottom: 4px;
+
+            margin-bottom: 4px
         }
 
-        .legend-item:last-child {
-            margin-bottom: 0;
-        }
+
 
         .legend-color {
+
             width: 14px;
+
             height: 14px;
-            border-radius: 4px;
+
+            border-radius: 4px
         }
 
-        .legend-color.inprogress {
-            background: #FF8C00;
+
+
+        .legend-color.boundary {
+
+            background: transparent;
+
+            border: 2px solid #FF0000
         }
 
-        .legend-color.completed {
-            background: #10B981;
-        }
+
 
         .toast {
+
             position: fixed;
+
             bottom: 30px;
+
             right: 30px;
+
             padding: 12px 24px;
+
             border-radius: 12px;
+
             background: #2F3E9E;
+
             color: white;
-            font-family: 'Inter', sans-serif;
+
             font-size: 13px;
+
             font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
             z-index: 10000;
-            animation: slideUp 0.3s ease;
-            max-width: 400px;
+
+            animation: slideUp .3s
         }
+
+
 
         .toast.error {
-            background: #6B7280;
+
+            background: #EF4444
         }
+
+
 
         @keyframes slideUp {
+
             from {
+
                 opacity: 0;
-                transform: translateY(20px);
+
+                transform: translateY(20px)
             }
 
+
+
             to {
+
                 opacity: 1;
-                transform: translateY(0);
+
+                transform: translateY(0)
             }
+
         }
+
+
 
         @keyframes spin {
+
             to {
-                transform: rotate(360deg);
+
+                transform: rotate(360deg)
             }
+
         }
+
+
 
         #loadingOverlay {
+
             position: fixed;
+
             top: 0;
+
             left: 0;
+
             width: 100%;
+
             height: 100%;
-            background: rgba(47, 62, 158, 0.9);
+
+            background: rgba(47, 62, 158, .9);
+
             display: none;
+
             justify-content: center;
+
             align-items: center;
-            z-index: 9999;
-            backdrop-filter: blur(8px);
+
+            z-index: 9999
         }
+
+
 
         .loading-card {
+
             background: white;
+
             padding: 40px;
+
             border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+
+            text-align: center
         }
+
+
 
         .spinner {
+
             width: 40px;
+
             height: 40px;
+
             border: 3px solid #E5E7EB;
+
             border-top-color: #2F3E9E;
+
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
+
+            animation: spin .8s linear infinite;
+
+            margin: 0 auto 16px
         }
 
-        .loading-card p {
-            font-family: 'Inter', sans-serif;
-            color: #1F2937;
-            font-weight: 600;
-            font-size: 14px;
-        }
 
-        /* 🔴 CUSTOM SUGGESTIONS DROPDOWN - NEECHE AUR SCROLL */
+
         .suggestions-wrapper {
-            position: relative;
-            width: 100%;
+
+            position: relative
         }
+
+
 
         .suggestions-dropdown {
+
             position: absolute;
+
             top: 100%;
+
             left: 0;
+
             right: 0;
+
             background: white;
+
             border: 1px solid #E5E7EB;
+
             border-radius: 8px;
-            max-height: 200px;
+
+            max-height: 220px;
+
             overflow-y: auto;
+
             z-index: 9999;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+
             display: none;
-            margin-top: 4px;
+
+            margin-top: 4px
         }
+
+
 
         .suggestions-dropdown.show {
-            display: block;
+
+            display: block
         }
+
+
 
         .suggestions-dropdown .suggestion-item {
-            padding: 8px 12px;
+
+            padding: 10px 14px;
+
             cursor: pointer;
+
             font-size: 12px;
-            font-family: 'Inter', sans-serif;
-            color: #1F2937;
+
             border-bottom: 1px solid #F3F4F6;
-            transition: background 0.15s;
+
+            transition: all .15s;
+
+            line-height: 1.5;
+
         }
+
+
 
         .suggestions-dropdown .suggestion-item:hover {
-            background: #EFF3F8;
-            color: #2F3E9E;
+
+            background: #EEF2FF
         }
 
-        .suggestions-dropdown .suggestion-item:last-child {
-            border-bottom: none;
+
+
+        .suggestion-item .main {
+
+            font-weight: 600;
+
+            color: #1F2937;
+
+            display: block;
+
         }
 
-        /* 🔴 SCROLLBAR STYLES */
-        .suggestions-dropdown::-webkit-scrollbar {
-            width: 5px;
+
+
+        .suggestion-item .sub {
+
+            font-size: 10px;
+
+            color: #6B7280;
+
+            display: block;
+
+            margin-top: 3px;
+
         }
 
-        .suggestions-dropdown::-webkit-scrollbar-track {
-            background: #F3F4F6;
-            border-radius: 10px;
+
+
+        .suggestion-item:hover .main {
+
+            color: #2F3E9E
         }
 
-        .suggestions-dropdown::-webkit-scrollbar-thumb {
-            background: #2F3E9E;
-            border-radius: 10px;
-        }
 
-        .suggestions-dropdown::-webkit-scrollbar-thumb:hover {
-            background: #1a1a4e;
-        }
 
-        @media (max-width: 1024px) {
-            #sidebar {
-                width: 260px;
-            }
-        }
+        @media(max-width:768px) {
 
-        @media (max-width: 768px) {
             #main {
+
                 flex-direction: column;
-                padding: 10px;
+
+                padding: 10px
             }
 
+
+
             #sidebar {
+
                 width: 100%;
-                max-height: 280px;
+
+                max-height: 280px
             }
 
-            header {
-                padding: 10px 16px;
-            }
-
-            .logo {
-                font-size: 18px;
-            }
-
-            .controls button {
-                font-size: 11px;
-                padding: 4px 10px;
-                height: 30px;
-            }
-
-            .controls select {
-                font-size: 11px;
-                padding: 4px 8px;
-                height: 30px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            #sidebar {
-                max-height: 200px;
-            }
-
-            .stat-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 4px;
-            }
-
-            .stat-card {
-                padding: 6px;
-            }
-
-            .stat-card .stat-value {
-                font-size: 16px;
-            }
         }
     </style>
+
 </head>
+
+
 
 <body>
 
     <div id="app">
+
         <header>
-            <div class="logo">🏘️ Property Map <span>Boundary & Parcels</span></div>
+
+            <div class="logo">🏘️ Property Map <span></span></div>
+
             <div class="controls">
-                <select id="layerSelector">
-                    <option value="both">📊 Both Layers</option>
-                    <option value="boundary">📐 Boundary Only</option>
-                    <option value="parcels">📦 Parcels Only</option>
+                <!-- 🔴 YEH DROPDOWN ADD KARO - SABSE PEHLE -->
+                <select id="baseMapSelector"
+                    style="padding:6px 12px;border:1px solid #E5E7EB;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;background:white;height:36px;cursor:pointer;">
+                    <option value="carto">🗺️ Carto Light</option>
+                    <option value="osm">🌍 OpenStreetMap</option>
+                    <option value="satellite" selected>🛰️ Satellite</option> <!-- 🔴 YAHAN selected ADD KARO -->
+                    <option value="topo">⛰️ Topographic</option>
+                    <option value="dark">🌙 Dark Mode</option>
+                    <option value="streets">🏙️ Streets</option>
                 </select>
+
                 <button id="markInProgress" class="btn-inprogress">⏳ IN PROGRESS</button>
                 <button id="markCompleted" class="btn-completed">✅ COMPLETED</button>
                 <button id="clearSelection" class="btn-clear">✖️ Clear</button>
                 <button id="resetChanges" class="btn-reset">↩️ Reset</button>
                 <button id="saveChanges" class="btn-save">💾 Save</button>
             </div>
+
         </header>
 
         <div id="main">
+
             <div id="sidebar">
+
                 <div class="stats">
+
                     <h3>📊 Statistics</h3>
+
                     <div class="stat-grid">
-                        <div class="stat-card">
-                            <span class="stat-value" id="totalCount">0</span>
-                            <span class="stat-label">Total</span>
-                        </div>
-                        <div class="stat-card inprogress">
-                            <span class="stat-value" id="inprogressCount">0</span>
-                            <span class="stat-label">IN PROGRESS</span>
-                        </div>
-                        <div class="stat-card completed">
-                            <span class="stat-value" id="completedCount">0</span>
-                            <span class="stat-label">COMPLETED</span>
-                        </div>
+
+                        <div class="stat-card"><span class="stat-value" id="totalCount">0</span><span
+                                class="stat-label">Total</span></div>
+
+                        <div class="stat-card inprogress"><span class="stat-value" id="inprogressCount">0</span><span
+                                class="stat-label">IN PROGRESS</span></div>
+
+                        <div class="stat-card completed"><span class="stat-value" id="completedCount">0</span><span
+                                class="stat-label">COMPLETED</span></div>
+
                     </div>
+
                 </div>
+
                 <div class="filters">
-                    <h3>🔍 Filters</h3>
-                    <div class="filter-group">
-                        <label>Status</label>
-                        <select id="statusFilter" onchange="applyFilters()">
+
+                    <h3>🔍 Interconnected Filters</h3>
+
+                    <div class="filter-group"><label>Status</label><select id="statusFilter" onchange="applyFilters()">
+
                             <option value="ALL">All</option>
+
                             <option value="IN PROGRESS">⏳ IN PROGRESS</option>
+
                             <option value="COMPLETED">✅ COMPLETED</option>
-                        </select>
-                    </div>
 
-                    <!-- 🔴 OWNER FILTER WITH CUSTOM DROPDOWN -->
-                    <div class="filter-group">
-                        <label>Owner</label>
-                        <div class="suggestions-wrapper">
-                            <input type="text" id="ownerFilter" placeholder="Search owner..." autocomplete="off"
-                                oninput="showSuggestions('owner')" onfocus="showSuggestions('owner')">
+                        </select></div>
+
+                    <div class="filter-group"><label>Owner</label>
+
+                        <div class="suggestions-wrapper"><input type="text" id="ownerFilter"
+                                placeholder="Search owner..." autocomplete="off" oninput="showSuggestions('owner')"
+                                onfocus="showSuggestions('owner')">
+
                             <div class="suggestions-dropdown" id="ownerSuggestions"></div>
+
                         </div>
+
                     </div>
 
-                    <!-- 🔴 PARCEL FILTER WITH CUSTOM DROPDOWN -->
-                    <div class="filter-group">
-                        <label>Parcel</label>
-                        <div class="suggestions-wrapper">
-                            <input type="text" id="parcelFilter" placeholder="Search parcel..." autocomplete="off"
-                                oninput="showSuggestions('parcel')" onfocus="showSuggestions('parcel')">
+                    <div class="filter-group"><label>Parcel</label>
+
+                        <div class="suggestions-wrapper"><input type="text" id="parcelFilter"
+                                placeholder="Search parcel..." autocomplete="off" oninput="showSuggestions('parcel')"
+                                onfocus="showSuggestions('parcel')">
+
                             <div class="suggestions-dropdown" id="parcelSuggestions"></div>
+
                         </div>
+
                     </div>
 
-                    <!-- 🔴 ADDRESS FILTER WITH CUSTOM DROPDOWN -->
-                    <div class="filter-group">
-                        <label>Address</label>
-                        <div class="suggestions-wrapper">
-                            <input type="text" id="addressFilter" placeholder="Search address..." autocomplete="off"
-                                oninput="showSuggestions('address')" onfocus="showSuggestions('address')">
+                    <div class="filter-group"><label>Address</label>
+
+                        <div class="suggestions-wrapper"><input type="text" id="addressFilter"
+                                placeholder="Search address..." autocomplete="off" oninput="showSuggestions('address')"
+                                onfocus="showSuggestions('address')">
+
                             <div class="suggestions-dropdown" id="addressSuggestions"></div>
+
                         </div>
+
                     </div>
 
-                    <div class="filter-actions">
-                        <button id="clearFiltersBtn" onclick="clearAllFilters()">✖️ Clear All</button>
-                    </div>
+                    <div class="filter-actions"><button id="clearFiltersBtn" onclick="clearAllFilters()">✖️ Clear
+
+                            All</button></div>
+
                 </div>
+
             </div>
 
             <div id="map-container">
+
                 <div id="map"></div>
+
                 <div class="map-legend">
+
                     <div class="legend-item">
-                        <div class="legend-color inprogress"></div>
-                        <span>IN PROGRESS</span>
+
+                        <div class="legend-color boundary"></div><span>Boundary</span>
+
                     </div>
+
                     <div class="legend-item">
-                        <div class="legend-color completed"></div>
-                        <span>COMPLETED</span>
+
+                        <div class="legend-color"
+                            style="background:transparent;border:2px solid #FF8C00;width:14px;height:14px;border-radius:4px">
+
+                        </div><span>IN PROGRESS</span>
+
                     </div>
+
+                    <div class="legend-item">
+
+                        <div class="legend-color"
+                            style="background:transparent;border:2px solid #10B981;width:14px;height:14px;border-radius:4px">
+
+                        </div><span>COMPLETED</span>
+
+                    </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
 
     <div id="loadingOverlay">
+
         <div class="loading-card">
+
             <div class="spinner"></div>
-            <p id="loadingText">Loading data...</p>
+
+            <p id="loadingText">Loading...</p>
+
         </div>
+
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-    </script>
+
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        // ============================================
-        // CONFIGURATION
-        // ============================================
+
         const CONFIG = {
             BOUNDARY_URL: 'Boundary.geojson',
             PARCELS_URL: 'Parcels.geojson',
-            SHEET_URL: 'https://docs.google.com/spreadsheets/d/1rB5ra-QHYh3QOPHu0rvRpkVs9ackeFK4HB1buB2oxKI/export?format=csv&gid=0',
-            SHEET_WRITE_URL: 'https://script.google.com/macros/s/AKfycbwvtOvfVJUcyIyM6gPK2oqeWHN2EZVo5uB8nTnmP5ILh4ijYlbg4XevriX2OkJ1yDZW/exec',
-            DEFAULT_VIEW: [38, -96],
-            DEFAULT_ZOOM: 5,
-            COLORS: {
-                'IN PROGRESS': '#FF8C00',
-                'COMPLETED': '#10B981',
-                HIGHLIGHT: '#FF0000'
+            SHEET_CSV_URL: 'https://docs.google.com/spreadsheets/d/1rB5ra-QHYh3QOPHu0rvRpkVs9ackeFK4HB1buB2oxKI/export?format=csv&gid=0',
+            SHEET_WRITE_URL: 'https://script.google.com/macros/s/AKfycbwufWfKk3FEREcNvHDIDz8RLIV3ilXx5WXuCsgji78W261ZyXH5Ml_886PEV9maz2TA/exec',
+            DEFAULT_VIEW: [38, -96], DEFAULT_ZOOM: 5,
+            COLORS: { 'IN PROGRESS': '#FF8C00', 'COMPLETED': '#10B981', 'BOUNDARY': '#FF0000', 'HIGHLIGHT': '#FF0000' }
+        };
+
+        // 🔴🔴🔴 YEH BASE_MAPS OBJECT ADD KARO 🔴🔴🔴
+        const BASE_MAPS = {
+            carto: {
+                url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB'
+            },
+            osm: {
+                url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            },
+            satellite: {
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                attribution: '&copy; Esri, Maxar, Earthstar'
+            },
+            topo: {
+                url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                attribution: '&copy; OpenTopoMap'
+            },
+            dark: {
+                url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                attribution: '&copy; OpenStreetMap, CartoDB'
+            },
+            streets: {
+                url: 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+                attribution: '&copy; OpenStreetMap France'
             }
         };
 
-        // ============================================
-        // STATE
-        // ============================================
-        let map = null;
-        let currentLayer = null;
-        let allFeatures = [];
-        let selectedFeatures = [];
-        let originalData = new Map();
-        let hasChanges = false;
-        let isDataLoaded = false;
+        let map, currentLayer, allFeatures = [], selectedFeatures = [], originalData = new Map();
 
-        // 🔴 DATA STORE FOR SUGGESTIONS
-        let allOwners = [];
-        let allParcels = [];
-        let allAddresses = [];
+        let hasChanges = false, isDataLoaded = false, hoveredLayer = null, highlightedFeature = null;
 
-        // ============================================
-        // LOADING / TOAST FUNCTIONS
-        // ============================================
-        function showLoading(message) {
-            document.getElementById('loadingText').textContent = message;
-            document.getElementById('loadingOverlay').style.display = 'flex';
-        }
+        let sheetDataMap = new Map(), allOwners = [], allParcels = [], allAddresses = [], activeSuggestionsDiv = null;
 
-        function hideLoading() {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }
 
-        function showToast(message, isError = false) {
-            const existing = document.querySelector('.toast');
-            if (existing) existing.remove();
-            const toast = document.createElement('div');
-            toast.className = 'toast' + (isError ? ' error' : '');
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.3s';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
 
-        // ============================================
-        // GOOGLE SHEETS - READ (CSV)
-        // ============================================
-        async function loadFromSheet() {
+        function getObjectId(p) { return (p.OBJECTID_12 || p.objectid_12 || p.OBJECTID || p.objectid || p.FID || p.fid || '').toString().trim() }
+
+        function showLoading(m) { document.getElementById('loadingText').textContent = m; document.getElementById('loadingOverlay').style.display = 'flex' }
+
+        function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none' }
+
+        function showToast(m, e) { const x = document.querySelector('.toast'); if (x) x.remove(); const t = document.createElement('div'); t.className = 'toast' + (e ? ' error' : ''); t.textContent = m; document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300) }, 3000) }
+
+
+
+        async function loadSheetData() {
             try {
-                const response = await fetch(CONFIG.SHEET_URL);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const csv = await response.text();
-                const rows = csv.split('\n').filter(row => row.trim());
-
+                const r = await fetch(CONFIG.SHEET_CSV_URL);
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const csv = await r.text();
+                const rows = csv.split('\n').filter(rw => rw.trim());
                 if (rows.length < 2) return new Map();
 
-                const headers = rows[0].split(',').map(h => h.trim().toUpperCase());
-                const data = new Map();
+                const h = rows[0].split(',').map(hd => hd.trim().toUpperCase());
+
+                // 🔴 SAARE COLUMNS KE INDICES - LINK BHI ADD KARO
+                const oi = h.indexOf('OBJECTID_12');
+                const ai = h.indexOf('ADDRESS');
+                const si = h.indexOf('SIGNER');
+                const owi = h.indexOf('OWNER');
+                const pi = h.indexOf('PARCEL');
+                const sti = h.indexOf('STATUS');
+                const li = h.indexOf('LINK'); // 🔴 LINK COLUMN ADD KARO
+
+                const dm = new Map();
 
                 for (let i = 1; i < rows.length; i++) {
-                    const cols = parseCSVRow(rows[i]);
-                    if (cols.length >= 5) {
-                        const address = cols[0]?.trim() || '';
-                        const signer = cols[1]?.trim() || '';
-                        const owner = cols[2]?.trim() || '';
-                        const parcel = cols[3]?.trim() || '';
-                        const status = cols[4]?.trim() || 'IN PROGRESS';
-                        const key = parcel || address;
-
-                        if (key && key !== 'PARCEL' && key !== 'ADDRESS' && key !== 'parcel' && key !== 'address') {
-                            data.set(key, { address, signer, owner, parcel, status });
-                        }
+                    const c = parseCSVRow(rows[i]);
+                    const oid = oi >= 0 ? (c[oi] || '').trim().toString() : '';
+                    if (oid) {
+                        dm.set(oid, {
+                            objectId: oid,
+                            address: ai >= 0 ? (c[ai] || '').trim() : '',
+                            signer: si >= 0 ? (c[si] || '').trim() : '',
+                            owner: owi >= 0 ? (c[owi] || '').trim() : '',
+                            parcel: pi >= 0 ? (c[pi] || '').trim() : '',
+                            status: sti >= 0 ? (c[sti] || 'IN PROGRESS').trim() : 'IN PROGRESS',
+                            link: li >= 0 ? (c[li] || '').trim() : '' // 🔴 LINK STORE KARO
+                        });
                     }
                 }
-                return data;
-            } catch (error) {
-                console.error('Error loading from sheet:', error);
-                return null;
+                console.log('✅ Sheet:', dm.size, 'rows');
+                console.log('🔗 Sample link:', dm.size > 0 ? Array.from(dm.values())[0].link : 'No link');
+                return dm;
+            } catch (e) {
+                console.error('Sheet Error:', e);
+                return new Map()
             }
         }
 
-        function parseCSVRow(row) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < row.length; i++) {
-                const ch = row[i];
-                if (ch === '"') inQuotes = !inQuotes;
-                else if (ch === ',' && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else {
-                    current += ch;
+        function parseCSVRow(row) { const r = []; let cur = '', iq = false; for (let i = 0; i < row.length; i++) { const ch = row[i]; if (ch === '"') iq = !iq; else if (ch === ',' && !iq) { r.push(cur.trim()); cur = '' } else cur += ch } r.push(cur.trim()); return r.map(v => v.replace(/^"|"$/g, '')) }
+
+
+
+        // 🔴🔴🔴 FIXED: Har OBJECTID_12 ka apna entry
+
+        // 🔴🔴🔴 ABSOLUTE FINAL FIX - Har field guaranteed
+
+        function updateAutocompleteFromSheet() {
+            allOwners = [];
+            allParcels = [];
+            allAddresses = [];
+
+            sheetDataMap.forEach((row, oid) => {
+                const ownerValue = row.owner || '';
+                const parcelValue = row.parcel || '';
+                const addressValue = row.address || '';
+                const linkValue = row.link || ''; // 🔴 LINK BHI STORE KARO
+
+                if (ownerValue) {
+                    allOwners.push({
+                        value: ownerValue,
+                        objectId: oid,
+                        owner: ownerValue,
+                        parcel: parcelValue,
+                        address: addressValue,
+                        status: row.status,
+                        link: linkValue
+                    });
                 }
-            }
-            result.push(current.trim());
-            return result.map(v => v.replace(/^"|"$/g, ''));
+
+                if (parcelValue) {
+                    allParcels.push({
+                        value: parcelValue,
+                        objectId: oid,
+                        owner: ownerValue,
+                        parcel: parcelValue,
+                        address: addressValue,
+                        status: row.status,
+                        link: linkValue
+                    });
+                }
+
+                if (addressValue) {
+                    allAddresses.push({
+                        value: addressValue,
+                        objectId: oid,
+                        owner: ownerValue,
+                        parcel: parcelValue,
+                        address: addressValue,
+                        status: row.status,
+                        link: linkValue
+                    });
+                }
+            });
+
+            allOwners.sort((a, b) => a.value.localeCompare(b.value));
+            allParcels.sort((a, b) => a.value.localeCompare(b.value));
+            allAddresses.sort((a, b) => a.value.localeCompare(b.value));
         }
 
-        // ============================================
-        // GOOGLE SHEETS - SAVE
-        // ============================================
-        async function saveToSheet(data) {
-            try {
-                showLoading('Saving to sheet...');
 
-                const payload = {
-                    action: 'update',
-                    data: Array.from(data.entries()).map(([key, value]) => ({ key, ...value }))
-                };
+
+        async function saveToSheet() {
+            try {
+                showLoading('Saving...');
+                const d = [];
+                allFeatures.forEach(f => {
+                    if (f.properties._layerType === 'parcels') {
+                        const oid = getObjectId(f.properties);
+                        if (oid) {
+                            d.push({
+                                OBJECTID_12: oid,
+                                ADDRESS: f.properties.ADDRESS || f.properties.address || '',
+                                SIGNER: f.properties.SIGNER || f.properties.signer || '',
+                                OWNER: f.properties.OWNER || f.properties.owner || '',
+                                PARCEL: f.properties.PARCEL || f.properties.parcel || '',
+                                STATUS: f.properties.Status || 'IN PROGRESS',
+                                LINK: f.properties.LINK || f.properties.link || '' // 🔴 LINK BHI SAVE KARO
+                            });
+                        }
+                    }
+                });
 
                 await fetch(CONFIG.SHEET_WRITE_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: d })
                 });
 
-                showToast('✅ Save request sent successfully!');
+                const ns = await loadSheetData();
+                if (ns.size > 0) {
+                    sheetDataMap = ns;
+                    updateAutocompleteFromSheet();
+                }
+
+                showToast('✅ Saved!');
                 hasChanges = false;
                 hideLoading();
-
-            } catch (error) {
-                console.error('Save error:', error);
+            } catch (e) {
                 hideLoading();
-                showToast('❌ Save failed! Check console.', true);
+                showToast('❌ Save failed!', true);
             }
         }
 
-        // ============================================
-        // MAP FUNCTIONS
-        // ============================================
-        function initMap() {
-            if (map) {
-                map.remove();
-                map = null;
-            }
-            map = L.map('map', {
-                zoomControl: true,
-                fadeAnimation: true,
-                zoomAnimation: true
-            }).setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM);
 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap & CartoDB',
+
+        function initMap() {
+            if (map) { map.remove(); map = null; }
+
+            // 🔴 DEFAULT MAP - SATELLITE
+            const defaultMap = 'satellite';  // ✅ YEH CHANGE KARO
+            const tileLayer = BASE_MAPS[defaultMap];
+
+            map = L.map('map', { zoomControl: true }).setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM);
+
+            L.tileLayer(tileLayer.url, {
+                attribution: tileLayer.attribution,
                 maxZoom: 19
             }).addTo(map);
 
-            setTimeout(() => {
-                if (map) map.invalidateSize();
-            }, 500);
-
-            window.addEventListener('resize', () => {
-                if (map) setTimeout(() => map.invalidateSize(), 200);
+            map.on('mousemove', function (e) {
+                if (!hoveredLayer) return;
+                if (!hoveredLayer.getBounds().contains(e.latlng)) {
+                    hoveredLayer.setStyle(getFeatureStyle(hoveredLayer.feature));
+                    hoveredLayer = null;
+                }
             });
+
+            setTimeout(() => { if (map) map.invalidateSize(); }, 500);
         }
 
-        function loadGeoJSON(url, layerType) {
-            return fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return response.json();
-                })
-                .then(geoData => {
-                    geoData.features.forEach(f => {
-                        f.properties._layerType = layerType;
-                        if (!f.properties.Status) f.properties.Status = 'IN PROGRESS';
-                    });
-                    return geoData;
-                });
+        function loadGeoJSON(url, lt) { return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() }).then(d => { d.features.forEach(f => { f.properties._layerType = lt; if (!f.properties.Status) f.properties.Status = 'IN PROGRESS' }); return d }) }
+
+        function loadGeoJSON(url, lt) { return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() }).then(d => { d.features.forEach(f => { f.properties._layerType = lt; if (!f.properties.Status) f.properties.Status = 'IN PROGRESS' }); return d }) }
+
+        // 🔴🔴🔴 YEH FUNCTION ADD KARO - loadGeoJSON ke BAAD 🔴🔴🔴
+        function changeBaseMap(mapType) {
+            if (!map) return;
+
+            // Purani tile layer hatao
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.TileLayer) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            // Naya tile layer add karo
+            const tileLayer = BASE_MAPS[mapType];
+            if (tileLayer) {
+                L.tileLayer(tileLayer.url, {
+                    attribution: tileLayer.attribution,
+                    maxZoom: 19
+                }).addTo(map);
+
+                showToast('🗺️ ' + mapType.charAt(0).toUpperCase() + mapType.slice(1));
+            }
         }
 
-        // ============================================
-        // loadAllLayers() - With Autocomplete
-        // ============================================
         async function loadAllLayers() {
             try {
-                showLoading('Loading data...');
-
-                const [boundaryData, parcelsData] = await Promise.all([
+                showLoading('Loading...');
+                const [bd, pd, sd] = await Promise.all([
                     loadGeoJSON(CONFIG.BOUNDARY_URL, 'boundary'),
-                    loadGeoJSON(CONFIG.PARCELS_URL, 'parcels')
+                    loadGeoJSON(CONFIG.PARCELS_URL, 'parcels'),
+                    loadSheetData()
                 ]);
 
-                const sheetData = await loadFromSheet();
+                sheetDataMap = sd;
+                let bf = bd.features, pf = pd.features, mc = 0;
 
-                // Sirf undefined features filter karo
-                function isValidFeature(f) {
-                    const props = f.properties || {};
-                    const hasValue = Object.values(props).some(v => {
-                        return v && v !== '' && v !== 'undefined' && v !== 'null' && v !== null;
-                    });
-                    return hasValue;
-                }
+                pf.forEach(f => {
+                    const oid = getObjectId(f.properties);
+                    if (oid && sd.has(oid)) {
+                        const r = sd.get(oid);
+                        f.properties.Status = r.status || 'IN PROGRESS';
+                        f.properties.OWNER = r.owner || f.properties.OWNER || '';
+                        f.properties.ADDRESS = r.address || f.properties.ADDRESS || '';
+                        f.properties.SIGNER = r.signer || f.properties.SIGNER || '';
+                        f.properties.PARCEL = r.parcel || f.properties.PARCEL || '';
+                        f.properties.LINK = r.link || ''; // 🔴 LINK ADD KARO
+                        mc++;
+                    }
+                });
 
-                let boundaryFeatures = boundaryData.features.filter(isValidFeature);
-                let parcelsFeatures = parcelsData.features.filter(isValidFeature);
+                allFeatures = [...bf, ...pf];
+                originalData = new Map();
 
-                // Emergency fallback
-                if (boundaryFeatures.length === 0) {
-                    boundaryFeatures = boundaryData.features;
-                }
-                if (parcelsFeatures.length === 0) {
-                    parcelsFeatures = parcelsData.features;
-                }
+                pf.forEach(f => {
+                    const oid = getObjectId(f.properties);
+                    if (oid) {
+                        originalData.set(oid, {
+                            address: f.properties.ADDRESS || '',
+                            signer: f.properties.SIGNER || '',
+                            owner: f.properties.OWNER || '',
+                            parcel: f.properties.PARCEL || '',
+                            status: f.properties.Status || 'IN PROGRESS',
+                            link: f.properties.LINK || '' // 🔴 LINK ADD KARO
+                        });
+                    }
+                });
 
-                allFeatures = [...boundaryFeatures, ...parcelsFeatures];
-
-                console.log('✅ Boundary Features:', boundaryFeatures.length);
-                console.log('✅ Parcels Features:', parcelsFeatures.length);
-                console.log('✅ Total Features:', allFeatures.length);
-
-                if (sheetData && sheetData.size > 0) {
-                    allFeatures.forEach(f => {
-                        const key = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f
-                            .properties.address || '';
-                        if (key && sheetData.has(key)) {
-                            f.properties.Status = sheetData.get(key).status;
-                        }
-                    });
-                    originalData = new Map(sheetData);
-                } else {
-                    allFeatures.forEach(f => {
-                        const key = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f
-                            .properties.address || '';
-                        if (key) {
-                            originalData.set(key, {
-                                status: f.properties.Status || 'IN PROGRESS',
-                                address: f.properties.ADDRESS || f.properties.address || '',
-                                signer: f.properties.SIGNER || f.properties.signer || '',
-                                owner: f.properties.OWNER || f.properties.owner || '',
-                                parcel: f.properties.PARCEL || f.properties.parcel || ''
-                            });
-                        }
-                    });
-                }
-
+                updateAutocompleteFromSheet();
                 isDataLoaded = true;
-                renderLayer('both');
+                renderLayer();
                 updateStats();
 
-                // 🔴 AUTOSUGGESTIONS UPDATE
-                updateAutocompleteSuggestions();
-
                 hideLoading();
-                showToast('✅ Data loaded successfully!');
+            
 
-            } catch (error) {
-                console.error('Error loading data:', error);
+                // 🔴 DEBUG: Check karo link aaya ya nahi
+                console.log('🔗 First feature LINK:', allFeatures.find(f => f.properties._layerType === 'parcels')?.properties?.LINK);
+            } catch (e) {
                 hideLoading();
-                showToast('❌ Failed to load data: ' + error.message, true);
+                showToast('❌ ' + e.message, true);
             }
         }
 
-        // ============================================
-        // 🔴 UPDATE SUGGESTIONS DATA
-        // ============================================
-        function updateAutocompleteSuggestions() {
-            const parcels = allFeatures.filter(f => f.properties._layerType === 'parcels');
 
-            const ownersSet = new Set();
-            const parcelsSet = new Set();
-            const addressesSet = new Set();
 
-            parcels.forEach(f => {
-                const p = f.properties;
-                if (p.OWNER || p.owner) ownersSet.add((p.OWNER || p.owner).toString());
-                if (p.PARCEL || p.parcel) parcelsSet.add((p.PARCEL || p.parcel).toString());
-                if (p.ADDRESS || p.address) addressesSet.add((p.ADDRESS || p.address).toString());
-            });
+        // 🔴🔴🔴 INTERCONNECTED SUGGESTIONS
 
-            allOwners = Array.from(ownersSet).sort();
-            allParcels = Array.from(parcelsSet).sort();
-            allAddresses = Array.from(addressesSet).sort();
-
-            console.log('✅ Autocomplete updated:', {
-                owners: allOwners.length,
-                parcels: allParcels.length,
-                addresses: allAddresses.length
-            });
-        }
-
-        // ============================================
-        // 🔴 SHOW SUGGESTIONS - NEECHE AUR SCROLL KE SAATH
-        // ============================================
         function showSuggestions(type) {
+
             let input, suggestionsDiv, data;
 
-            if (type === 'owner') {
-                input = document.getElementById('ownerFilter');
-                suggestionsDiv = document.getElementById('ownerSuggestions');
-                data = allOwners;
-            } else if (type === 'parcel') {
-                input = document.getElementById('parcelFilter');
-                suggestionsDiv = document.getElementById('parcelSuggestions');
-                data = allParcels;
-            } else if (type === 'address') {
-                input = document.getElementById('addressFilter');
-                suggestionsDiv = document.getElementById('addressSuggestions');
-                data = allAddresses;
-            }
+            if (type === 'owner') { input = document.getElementById('ownerFilter'); suggestionsDiv = document.getElementById('ownerSuggestions'); data = allOwners }
+
+            else if (type === 'parcel') { input = document.getElementById('parcelFilter'); suggestionsDiv = document.getElementById('parcelSuggestions'); data = allParcels }
+
+            else if (type === 'address') { input = document.getElementById('addressFilter'); suggestionsDiv = document.getElementById('addressSuggestions'); data = allAddresses }
+
+
 
             const value = input.value.toLowerCase().trim();
 
-            // 🔴 Filter suggestions
-            let filtered = [];
-            if (value) {
-                filtered = data.filter(item => item.toLowerCase().includes(value));
-            } else {
-                // 🔴 Agar kuch type nahi kiya toh sab dikhao (limit 20)
-                filtered = data.slice(0, 20);
-            }
 
-            // 🔴 Show suggestions
-            if (filtered.length > 0) {
-                suggestionsDiv.innerHTML = '';
-                filtered.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.textContent = item;
-                    div.onmousedown = function(e) {
-                        e.preventDefault(); // Focus nahi hatna chahiye
-                        input.value = item;
-                        suggestionsDiv.classList.remove('show');
-                        applyFilters();
-                        setTimeout(() => {
-                            suggestionsDiv.classList.remove('show');
-                        }, 100);
-                    };
-                    suggestionsDiv.appendChild(div);
-                });
-                suggestionsDiv.classList.add('show');
-            } else {
-                suggestionsDiv.classList.remove('show');
-            }
 
-            // 🔴 Filter apply karo (live filter)
-            if (window.filterTimeout) {
-                clearTimeout(window.filterTimeout);
-            }
-            window.filterTimeout = setTimeout(function() {
-                applyFilters();
-            }, 300);
-        }
+            const ownerValue = document.getElementById('ownerFilter').value.trim();
 
-        // ============================================
-        // 🔴 CLICK OUTSIDE - Suggestions hide karo
-        // ============================================
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.suggestions-wrapper')) {
-                document.querySelectorAll('.suggestions-dropdown').forEach(el => {
-                    el.classList.remove('show');
-                });
-            }
-        });
+            const parcelValue = document.getElementById('parcelFilter').value.trim();
 
-        // ============================================
-        // 🔴 ESC KEY - Suggestions hide karo
-        // ============================================
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.suggestions-dropdown').forEach(el => {
-                    el.classList.remove('show');
-                });
-            }
-        });
+            const addressValue = document.getElementById('addressFilter').value.trim();
 
-        function renderLayer(layerType) {
-            if (!isDataLoaded || allFeatures.length === 0) return;
-            if (currentLayer) {
-                map.removeLayer(currentLayer);
-                currentLayer = null;
-            }
 
-            let featuresToRender = allFeatures;
-            if (layerType === 'boundary') {
-                featuresToRender = allFeatures.filter(f => f.properties._layerType === 'boundary');
-            } else if (layerType === 'parcels') {
-                featuresToRender = allFeatures.filter(f => f.properties._layerType === 'parcels');
-            }
 
-            const statusFilter = document.getElementById('statusFilter').value;
-            const ownerFilter = document.getElementById('ownerFilter').value.toLowerCase().trim();
-            const parcelFilter = document.getElementById('parcelFilter').value.toLowerCase().trim();
-            const addressFilter = document.getElementById('addressFilter').value.toLowerCase().trim();
+            let filtered = data.filter(item => {
 
-            featuresToRender = featuresToRender.filter(f => {
-                const p = f.properties;
-                const statusMatch = statusFilter === 'ALL' || p.Status === statusFilter;
-                const ownerMatch = !ownerFilter || (p.OWNER || p.owner || '').toLowerCase().includes(ownerFilter);
-                const parcelMatch = !parcelFilter || (p.PARCEL || p.parcel || '').toLowerCase().includes(parcelFilter);
-                const addressMatch = !addressFilter || (p.ADDRESS || p.address || '').toLowerCase().includes(
-                    addressFilter);
-                return statusMatch && ownerMatch && parcelMatch && addressMatch;
+
+
+                // Owner selected ho to sirf us owner ka data
+
+                if (ownerValue && type !== 'owner' && item.owner !== ownerValue)
+
+                    return false;
+
+
+
+                // Parcel selected ho to sirf us parcel ka data
+
+                if (parcelValue && type !== 'parcel' && item.parcel !== parcelValue)
+
+                    return false;
+
+
+
+                // Address selected ho to sirf us address ka data
+
+                if (addressValue && type !== 'address' && item.address !== addressValue)
+
+                    return false;
+
+
+
+                // Jo textbox open hai usmein typing search
+
+                if (value && !item.value.toLowerCase().includes(value))
+
+                    return false;
+
+
+
+                return true;
+
             });
 
-            if (featuresToRender.length === 0) {
-                showToast('⚠️ No features match the filters', true);
-                return;
+
+
+            if (filtered.length > 0) {
+
+                suggestionsDiv.innerHTML = '';
+
+                filtered.forEach(item => {
+
+                    const div = document.createElement('div');
+
+                    div.className = 'suggestion-item';
+
+
+
+                    let main = item.value;
+
+                    let sub = '';
+
+                    if (type === 'owner') sub = '📋 ' + (item.parcel || 'N/A') + ' | 📍 ' + (item.address ? item.address.substring(0, 30) : 'N/A');
+
+                    else if (type === 'parcel') sub = '👤 ' + (item.owner || 'N/A') + ' | 📍 ' + (item.address ? item.address.substring(0, 30) : 'N/A');
+
+                    else if (type === 'address') sub = '👤 ' + (item.owner || 'N/A') + ' | 📋 ' + (item.parcel || 'N/A');
+
+
+
+                    // 🔴 DIV use karo taake neeche line mein aaye
+
+                    div.innerHTML = '<div class="main">' + main + '</div><div class="sub">' + sub + '</div>';
+
+
+
+                    // 🔴 CLICK = SIRF APNA BOX FILL KARO
+
+                    div.addEventListener('mousedown', function (e) {
+
+                        e.preventDefault();
+
+                        e.stopPropagation();
+
+
+
+                        // 🔴 SIRF wahi input fill karo jispe type kiya hai
+
+                        input.value = item.value;
+
+
+
+                        suggestionsDiv.classList.remove('show');
+
+                        activeSuggestionsDiv = null;
+
+                        filterAndFly(item.objectId);
+
+                    });
+
+
+
+                    suggestionsDiv.appendChild(div);
+
+                });
+
+                suggestionsDiv.classList.add('show');
+
+                activeSuggestionsDiv = suggestionsDiv;
+
+            } else {
+
+                suggestionsDiv.classList.remove('show');
+
+                activeSuggestionsDiv = null;
+
             }
 
-            currentLayer = L.geoJSON({
-                type: 'FeatureCollection',
-                features: featuresToRender
-            }, {
-                style: getFeatureStyle,
-                onEachFeature: onEachFeature
-            }).addTo(map);
-
-            try {
-                const bounds = currentLayer.getBounds();
-                if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 40] });
-            } catch (e) {
-                map.setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM);
-            }
-            updateStats();
         }
 
+        function filterAndFly(objectId) {
+
+            if (!isDataLoaded) return;
+
+            const sid = objectId.toString().trim();
+
+            const tf = allFeatures.find(f => getObjectId(f.properties) === sid && f.properties._layerType === 'parcels');
+
+            if (!tf) { showToast('❌ Not found', true); return; }
+
+
+
+            // 🔴 Purani layer aur timeout clear karo
+
+            if (window.hlTimeout) clearTimeout(window.hlTimeout);
+
+            if (window.zoomTimeout) clearTimeout(window.zoomTimeout);
+
+
+
+            if (currentLayer) { map.removeLayer(currentLayer); currentLayer = null; }
+
+
+
+            const fts = allFeatures.filter(f => {
+
+                if (f.properties._layerType === 'boundary') return true;
+
+                return getObjectId(f.properties) === sid;
+
+            });
+
+
+
+            currentLayer = L.geoJSON(
+
+                { type: 'FeatureCollection', features: fts },
+
+                { style: getFeatureStyle, onEachFeature: onEachFeature }
+
+            ).addTo(map);
+
+
+
+            // 🔴 Zoom sirf ek baar, debounce ke saath
+
+            window.zoomTimeout = setTimeout(() => {
+
+                currentLayer.eachLayer(function (l) {
+
+                    if (l.feature && getObjectId(l.feature.properties) === sid && l.feature.properties._layerType === 'parcels') {
+
+                        try {
+
+                            const b = l.getBounds();
+
+                            if (b.isValid()) {
+
+                                map.flyToBounds(b, { padding: [80, 80], maxZoom: 17, duration: 0.5 });
+
+                            }
+
+                        } catch (e) { }
+
+
+
+                        // Highlight
+
+                        highlightedFeature = l.feature;
+
+                        l.setStyle({ color: '#FF0000', weight: 5, fillOpacity: 0.2, fillColor: '#FF0000' });
+
+                        l.bringToFront();
+
+
+
+                        window.hlTimeout = setTimeout(() => {
+
+                            if (highlightedFeature === l.feature) {
+
+                                l.setStyle(getFeatureStyle(l.feature));
+
+                                highlightedFeature = null;
+
+                            }
+
+                        }, 4000);
+
+                    }
+
+                });
+
+            }, 100);
+
+
+
+            updateStats();
+
+            showToast('📍 Click polygon for popup');
+
+        }
+
+
+
+        function applyFilters() {
+
+            if (!isDataLoaded) return;
+
+            const sf = document.getElementById('statusFilter').value;
+
+            const of = document.getElementById('ownerFilter').value.toLowerCase().trim();
+
+            const pf = document.getElementById('parcelFilter').value.toLowerCase().trim();
+
+            const af = document.getElementById('addressFilter').value.toLowerCase().trim();
+
+            if (sf === 'ALL' && !of && !pf && !af) { renderLayer(); return }
+
+            if (currentLayer) { map.removeLayer(currentLayer); currentLayer = null }
+
+            let ftr = allFeatures.filter(f => { const p = f.properties; if (p._layerType === 'boundary') return true; const s = sf === 'ALL' || p.Status === sf; const o = !of || (p.OWNER || p.owner || '').toLowerCase().includes(of); const pa = !pf || (p.PARCEL || p.parcel || '').toLowerCase().includes(pf); const a = !af || (p.ADDRESS || p.address || '').toLowerCase().includes(af); return s && o && pa && a });
+
+            if (ftr.length === 0) { showToast('⚠️ No matches', true); return }
+
+            currentLayer = L.geoJSON({ type: 'FeatureCollection', features: ftr }, { style: getFeatureStyle, onEachFeature: onEachFeature }).addTo(map);
+
+            try { const b = currentLayer.getBounds(); if (b.isValid()) map.fitBounds(b, { padding: [50, 50], maxZoom: 16 }) } catch (e) { map.setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM) }
+
+            highlightedFeature = null; updateStats()
+
+        }
+
+
+
+        function renderLayer() { if (!isDataLoaded || allFeatures.length === 0) return; if (currentLayer) { map.removeLayer(currentLayer); currentLayer = null } selectedFeatures = []; highlightedFeature = null; currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, { style: getFeatureStyle, onEachFeature: onEachFeature }).addTo(map); try { const b = currentLayer.getBounds(); if (b.isValid()) map.fitBounds(b, { padding: [40, 40] }) } catch (e) { map.setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM) } updateStats() }
+
+
+
         function getFeatureStyle(feature) {
-            const status = feature.properties.Status || 'IN PROGRESS';
-            let color;
-            if (status === 'IN PROGRESS') {
-                color = CONFIG.COLORS['IN PROGRESS'];
-            } else if (status === 'COMPLETED') {
-                color = CONFIG.COLORS['COMPLETED'];
-            } else {
-                color = '#6B7280';
+            const lt = feature.properties._layerType;
+            const st = feature.properties.Status || 'IN PROGRESS';
+
+            if (lt === 'boundary') {
+                return {
+                    fillColor: 'transparent',
+                    color: '#FF0000',
+                    weight: 2.5,
+                    opacity: 1,
+                    fillOpacity: 0
+                };
             }
-            const isSelected = selectedFeatures.includes(feature);
+
+            // 🔴 HIGHLIGHT CHECK HATAYA - ab sirf normal style return karega
+            const c = st === 'IN PROGRESS' ? '#FF8C00' : st === 'COMPLETED' ? '#10B981' : '#6B7280';
             return {
-                fillColor: color,
-                color: isSelected ? CONFIG.COLORS.HIGHLIGHT : '#333333',
-                weight: isSelected ? 3 : 1.5,
+                fillColor: 'transparent',
+                color: c,
+                weight: 2,
                 opacity: 1,
-                fillOpacity: isSelected ? 0.85 : 0.6,
-                dashArray: feature.properties._layerType === 'boundary' ? null : '5, 5'
+                fillOpacity: 0
             };
         }
 
         function onEachFeature(feature, layer) {
             layer.feature = feature;
-            layer.bindPopup(createPopupContent(feature), { maxWidth: 350 });
+            if (feature.properties._layerType === 'boundary') return;
 
-            layer.on('click', function(e) {
-                if (e.target.options.fillOpacity > 0) {
-                    const idx = selectedFeatures.indexOf(feature);
-                    if (idx > -1) {
-                        selectedFeatures.splice(idx, 1);
-                    } else {
-                        selectedFeatures.push(feature);
-                    }
-                    refreshLayerStyles();
-                    this.openPopup();
-                }
-            });
+            layer.bindPopup(createPopupContent(feature), { maxWidth: 350, closeOnClick: false });
 
-            layer.on('mouseover', function(e) {
-                if (!selectedFeatures.includes(feature)) {
-                    this.setStyle({
-                        weight: 4,
-                        fillOpacity: 0.85,
-                        color: CONFIG.COLORS.HIGHLIGHT
+            layer.on('click', function (e) {
+                L.DomEvent.stopPropagation(e);
+
+                // 🔴 SABSE PEHLE - Sab features normal karo
+                if (currentLayer) {
+                    currentLayer.eachLayer(function (l) {
+                        if (l.feature && l.feature.properties._layerType === 'parcels') {
+                            l.setStyle(getFeatureStyle(l.feature));
+                            l.closePopup();
+                        }
                     });
                 }
+
+                if (window.hlTimeout) clearTimeout(window.hlTimeout);
+
+                // 🔴 Sirf yeh wala RED karo
+                highlightedFeature = feature;
+                this.setStyle({
+                    color: '#FF0000',
+                    weight: 5,
+                    fillOpacity: 0.2,
+                    fillColor: '#FF0000'
+                });
                 this.bringToFront();
+                this.openPopup();
             });
 
-            layer.on('mouseout', function(e) {
-                if (!selectedFeatures.includes(feature)) {
-                    refreshLayerStyles();
+            // 🔴🔴🔴 POPUP CLOSE = RED HATAO 🔴🔴🔴
+            layer.on('popupclose', function () {
+                if (highlightedFeature === feature) {
+                    this.setStyle(getFeatureStyle(feature));
+                    highlightedFeature = null;
+                    if (window.hlTimeout) clearTimeout(window.hlTimeout);
                 }
             });
 
-            layer.on('mouseleave', function(e) {
-                if (!selectedFeatures.includes(feature)) {
-                    refreshLayerStyles();
+            // HOVER
+            layer.on('mouseover', function () {
+                if (hoveredLayer && hoveredLayer !== this) {
+                    hoveredLayer.setStyle(getFeatureStyle(hoveredLayer.feature));
+                }
+                hoveredLayer = this;
+                if (highlightedFeature !== feature) {
+                    const s = getFeatureStyle(feature);
+                    this.setStyle({ color: s.color, weight: 3, fillOpacity: 0.1, fillColor: s.color });
+                    this.bringToFront();
                 }
             });
-        }
 
-        function refreshLayerStyles() {
-            if (!currentLayer) return;
-            currentLayer.eachLayer(layer => {
-                if (layer.feature) {
-                    const isSelected = selectedFeatures.includes(layer.feature);
-                    const style = getFeatureStyle(layer.feature);
-                    if (isSelected) {
-                        style.weight = 3;
-                        style.color = CONFIG.COLORS.HIGHLIGHT;
-                        style.fillOpacity = 0.85;
-                    }
-                    layer.setStyle(style);
+            layer.on('mouseout', function () {
+                if (hoveredLayer === this) hoveredLayer = null;
+                if (highlightedFeature !== feature) {
+                    this.setStyle(getFeatureStyle(feature));
                 }
             });
         }
 
         function createPopupContent(feature) {
-            const props = feature.properties;
-            const status = props.Status || 'IN PROGRESS';
-            let statusColor;
-            if (status === 'IN PROGRESS') {
-                statusColor = CONFIG.COLORS['IN PROGRESS'];
-            } else if (status === 'COMPLETED') {
-                statusColor = CONFIG.COLORS['COMPLETED'];
-            } else {
-                statusColor = '#6B7280';
-            }
-            const key = props.PARCEL || props.parcel || props.ADDRESS || props.address || '';
+            const p = feature.properties;
+            const st = p.Status || 'IN PROGRESS';
+            const sc = st === 'IN PROGRESS' ? '#FF8C00' : st === 'COMPLETED' ? '#10B981' : '#6B7280';
+            const oid = getObjectId(p);
+            const link = p.LINK || p.link || '';
 
-            let html = `
-                <div style="min-width:200px;font-family:'Inter',sans-serif;">
-                    <div style="background:#2F3E9E;color:white;padding:8px 12px;border-radius:6px 6px 0 0;font-weight:600;font-size:13px;">
-                        📋 Property Details
-                    </div>
-                    <div style="padding:12px;">
-                        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-            `;
+            let h = '<div style="min-width:220px;font-family:Inter,sans-serif">';
+            h += '<div style="background:#2F3E9E;color:white;padding:8px 12px;border-radius:6px 6px 0 0;font-weight:600;font-size:13px">📋 Property Details</div>';
+            h += '<div style="padding:12px"><table style="width:100%;border-collapse:collapse;font-size:12px">';
 
+            // 🔴 OBJECT ID HATA DIYA - SIRF YEH FIELDS
             const fields = [
-                { label: 'Address', key: 'ADDRESS' },
-                { label: 'Signer', key: 'SIGNER' },
-                { label: 'Owner', key: 'OWNER' },
-                { label: 'Parcel', key: 'PARCEL' }
+                { l: 'Address', k: 'ADDRESS' },
+                { l: 'Signer', k: 'SIGNER' },
+                { l: 'Owner', k: 'OWNER' },
+                { l: 'Parcel', k: 'PARCEL' }
             ];
 
             fields.forEach(f => {
-                let value = props[f.key] || props[f.key.toLowerCase()] || '';
-                if (value) {
-                    html += `
-                        <tr>
-                            <td style="padding:4px 8px;font-weight:600;color:#4B5563;">${f.label}:</td>
-                            <td style="padding:4px 8px;">${value}</td>
-                        </tr>
-                    `;
+                let v = p[f.k] || p[f.k.toLowerCase()] || '';
+                if (v) {
+                    h += '<tr><td style="padding:4px 8px;font-weight:600;color:#4B5563">' + f.l + ':</td><td style="padding:4px 8px">' + v + '</td></tr>';
                 }
             });
 
-            html += `
-                        <tr>
-                            <td style="padding:4px 8px;font-weight:600;color:#4B5563;">Status:</td>
-                            <td style="padding:4px 8px;">
-                                <span style="color:${statusColor};font-weight:bold;">${status}</span>
-                            </td>
-                        </tr>
-                        </table>
-                        <div style="margin-top:10px;padding-top:8px;border-top:1px solid #E5E7EB;display:flex;gap:8px;justify-content:center;">
-                            <button onclick="updateFeatureStatus('${key}','IN PROGRESS')" 
-                                    style="background:#FF8C00;color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;">
-                                ⏳ IN PROGRESS
-                            </button>
-                            <button onclick="updateFeatureStatus('${key}','COMPLETED')" 
-                                    style="background:#10B981;color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;">
-                                ✅ COMPLETED
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
+            // 🔴 LINK ROW - Agar link hai toh dikhao
+            if (link && link.trim() !== '') {
+                h += '<tr><td style="padding:4px 8px;font-weight:600;color:#4B5563">🔗 Link:</td>';
+                h += '<td style="padding:4px 8px">';
+                h += '<a href="' + link + '" target="_blank" style="color:#2F3E9E;font-weight:600;text-decoration:none;border-bottom:1px solid #2F3E9E;">';
+                h += '📄 Open Sheet';
+                h += '</a>';
+                h += '</td></tr>';
+            }
 
-            return html;
+            h += '<tr><td style="padding:4px 8px;font-weight:600;color:#4B5563">Status:</td><td style="padding:4px 8px"><span style="color:' + sc + ';font-weight:bold">' + st + '</span></td></tr>';
+            h += '</table>';
+
+            // 🔴 Buttons - IN PROGRESS + COMPLETED + SAVE
+            h += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid #E5E7EB;display:flex;gap:6px;justify-content:center;flex-wrap:wrap">';
+            h += '<button onclick="updateFeatureStatus(\'' + oid + '\',\'IN PROGRESS\')" style="background:#FF8C00;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">⏳ IN PROGRESS</button>';
+            h += '<button onclick="updateFeatureStatus(\'' + oid + '\',\'COMPLETED\')" style="background:#10B981;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">✅ COMPLETED</button>';
+            h += '<button onclick="saveSingleAndClose(\'' + oid + '\')" style="background:#2F3E9E;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">💾 Save</button>';
+            h += '</div>';
+
+            h += '</div></div>';
+            return h;
         }
+        // 🔴 NAYA FUNCTION - Popup ke Save button ke liye
 
-        // ============================================
-        // GLOBAL FUNCTIONS (for popup buttons)
-        // ============================================
-        window.updateFeatureStatus = function(key, status) {
-            const feature = allFeatures.find(f => {
-                const fKey = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f.properties
-                    .address || '';
-                return fKey === key;
-            });
-            if (feature) {
-                feature.properties.Status = status;
+        window.saveSingleAndClose = function (oid) {
+
+            saveToSheet();
+
+            map.closePopup();
+
+        };
+
+
+
+        window.updateFeatureStatus = function (oid, st) {
+            const sid = oid.toString().trim();
+            const f = allFeatures.find(ft => getObjectId(ft.properties) === sid && ft.properties._layerType === 'parcels');
+            if (f) {
+                f.properties.Status = st;
                 hasChanges = true;
-                renderLayer(document.getElementById('layerSelector').value);
+                if (currentLayer) {
+                    currentLayer.eachLayer(function (l) {
+                        if (l.feature === f) {
+                            l.setStyle(getFeatureStyle(f));
+                            // 🔴 Popup content update + DOBARA OPEN
+                            l.setPopupContent(createPopupContent(f));
+                            l.openPopup();
+                        }
+                    });
+                }
                 updateStats();
-                showToast(`✅ Status updated to ${status}`);
+                showToast('✅ ' + st + ' | 💾 Save to update Sheet');
             } else {
-                showToast('❌ Feature not found!', true);
+                showToast('❌ Not found!', true);
             }
         };
 
-        // ============================================
-        // UI FUNCTIONS
-        // ============================================
-        function updateStats() {
-            // 🔴 FIX: Sirf Parcels features ko count karo (Boundary ko ignore)
-            const parcelsFeatures = allFeatures.filter(f => f.properties._layerType === 'parcels');
 
-            const total = parcelsFeatures.length;
-            const inprogress = parcelsFeatures.filter(f => f.properties.Status === 'IN PROGRESS').length;
-            const completed = parcelsFeatures.filter(f => f.properties.Status === 'COMPLETED').length;
+        function updateStats() { const pf = allFeatures.filter(f => f.properties._layerType === 'parcels'); document.getElementById('totalCount').textContent = pf.length; document.getElementById('inprogressCount').textContent = pf.filter(f => f.properties.Status === 'IN PROGRESS').length; document.getElementById('completedCount').textContent = pf.filter(f => f.properties.Status === 'COMPLETED').length }
 
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('inprogressCount').textContent = inprogress;
-            document.getElementById('completedCount').textContent = completed;
 
-            console.log('📊 Stats - Total:', total, '| IN PROGRESS:', inprogress, '| COMPLETED:', completed);
-        }
 
-        // ============================================
-        // applyFilters()
-        // ============================================
-        function applyFilters() {
-            renderLayer(document.getElementById('layerSelector').value);
-        }
+        function clearAllFilters() { document.getElementById('statusFilter').value = 'ALL'; document.getElementById('ownerFilter').value = ''; document.getElementById('parcelFilter').value = ''; document.getElementById('addressFilter').value = ''; document.querySelectorAll('.suggestions-dropdown').forEach(el => el.classList.remove('show')); activeSuggestionsDiv = null; highlightedFeature = null; renderLayer(); showToast('✅ Cleared') }
 
-        // ============================================
-        // CLEAR ALL FILTERS
-        // ============================================
-        function clearAllFilters() {
-            document.getElementById('statusFilter').value = 'ALL';
-            document.getElementById('ownerFilter').value = '';
-            document.getElementById('parcelFilter').value = '';
-            document.getElementById('addressFilter').value = '';
+        function markSelectedAs(st) { if (selectedFeatures.length === 0) { showToast('⚠️ Select features first', true); return } selectedFeatures.forEach(f => f.properties.Status = st); hasChanges = true; applyFilters(); updateStats(); showToast('✅ ' + selectedFeatures.length + ' → ' + st); selectedFeatures = [] }
 
-            document.querySelectorAll('.suggestions-dropdown').forEach(el => {
-                el.classList.remove('show');
-            });
+        function clearSelection() { selectedFeatures = []; if (currentLayer) currentLayer.eachLayer(l => l.setStyle(getFeatureStyle(l.feature))) }
 
-            applyFilters();
-        }
+        function resetChanges() { if (!hasChanges) { showToast('ℹ️ No changes'); return } allFeatures.forEach(f => { if (f.properties._layerType === 'parcels') { const oid = getObjectId(f.properties); if (oid && originalData.has(oid)) f.properties.Status = originalData.get(oid).status } }); hasChanges = false; selectedFeatures = []; highlightedFeature = null; renderLayer(); updateStats(); showToast('🔄 Reset') }
 
-        function markSelectedAs(status) {
-            if (selectedFeatures.length === 0) {
-                showToast('⚠️ Please select at least one feature', true);
-                return;
-            }
-            selectedFeatures.forEach(f => f.properties.Status = status);
-            hasChanges = true;
-            renderLayer(document.getElementById('layerSelector').value);
-            updateStats();
-            showToast(`✅ ${selectedFeatures.length} marked as ${status}`);
-            selectedFeatures = [];
-        }
+        function saveChanges() { if (!hasChanges) { showToast('ℹ️ No changes'); return } saveToSheet() }
 
-        function clearSelection() {
-            selectedFeatures = [];
-            refreshLayerStyles();
-            showToast('✖️ Selection cleared');
-        }
 
-        function resetChanges() {
-            if (!hasChanges) {
-                showToast('ℹ️ No changes to reset');
-                return;
-            }
-            allFeatures.forEach(f => {
-                const key = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f.properties
-                    .address || '';
-                if (key && originalData.has(key)) {
-                    f.properties.Status = originalData.get(key).status;
-                }
-            });
-            hasChanges = false;
-            selectedFeatures = [];
-            renderLayer(document.getElementById('layerSelector').value);
-            updateStats();
-            showToast('🔄 Changes reset successfully');
-        }
 
-        function saveChanges() {
-            if (!hasChanges) {
-                showToast('ℹ️ No changes to save');
-                return;
-            }
-            const dataToSave = new Map();
-            allFeatures.forEach(f => {
-                const key = f.properties.PARCEL || f.properties.parcel || f.properties.ADDRESS || f.properties
-                    .address || '';
-                if (key) {
-                    dataToSave.set(key, {
-                        address: f.properties.ADDRESS || f.properties.address || '',
-                        signer: f.properties.SIGNER || f.properties.signer || '',
-                        owner: f.properties.OWNER || f.properties.owner || '',
-                        parcel: f.properties.PARCEL || f.properties.parcel || '',
-                        status: f.properties.Status
-                    });
-                }
-            });
-            saveToSheet(dataToSave);
-        }
+        document.addEventListener('mousedown', function (e) { if (!e.target.closest('.suggestions-wrapper')) { document.querySelectorAll('.suggestions-dropdown').forEach(el => el.classList.remove('show')); activeSuggestionsDiv = null } });
 
-        // ============================================
-        // KEYBOARD SHORTCUTS
-        // ============================================
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                saveChanges();
-            }
-            if (e.ctrlKey && e.key === 'r') {
-                e.preventDefault();
-                resetChanges();
-            }
-            if (e.key === 'Escape') {
-                clearSelection();
-            }
-        });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { document.querySelectorAll('.suggestions-dropdown').forEach(el => el.classList.remove('show')); activeSuggestionsDiv = null; clearSelection(); highlightedFeature = null; if (currentLayer) currentLayer.eachLayer(l => l.setStyle(getFeatureStyle(l.feature))) } if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveChanges() } if (e.ctrlKey && e.key === 'r') { e.preventDefault(); resetChanges() } });
 
-        // ============================================
-        // EVENT LISTENERS
-        // ============================================
-        document.addEventListener('DOMContentLoaded', function() {
+
+
+        document.addEventListener('DOMContentLoaded', function () {
             initMap();
             loadAllLayers();
 
-            document.getElementById('layerSelector').addEventListener('change', applyFilters);
+            // 🔴🔴🔴 YEH LINE ADD KARO 🔴🔴🔴
+            document.getElementById('baseMapSelector').addEventListener('change', function (e) {
+                changeBaseMap(e.target.value);
+            });
 
             document.getElementById('clearFiltersBtn').addEventListener('click', clearAllFilters);
-
             document.getElementById('markInProgress').addEventListener('click', () => markSelectedAs('IN PROGRESS'));
             document.getElementById('markCompleted').addEventListener('click', () => markSelectedAs('COMPLETED'));
             document.getElementById('clearSelection').addEventListener('click', clearSelection);
@@ -1344,20 +1717,12 @@
             document.getElementById('saveChanges').addEventListener('click', saveChanges);
         });
 
-        // ============================================
-        // HANDLE ERRORS
-        // ============================================
-        window.addEventListener('error', function(e) {
-            console.error('Global error:', e);
-            showToast('⚠️ An error occurred. Check console.', true);
-        });
+        console.log('🏘️ FINAL FIXED - All 3 Filters Interconnected');
 
-        console.log('🏘️ Property Map App Initialized');
-        console.log('📋 Google Sheets URL:', CONFIG.SHEET_WRITE_URL);
-        console.log('📂 Boundary URL:', CONFIG.BOUNDARY_URL);
-        console.log('📂 Parcels URL:', CONFIG.PARCELS_URL);
     </script>
 
 </body>
+
+
 
 </html>
