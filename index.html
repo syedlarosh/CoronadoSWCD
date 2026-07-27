@@ -713,24 +713,76 @@
 
 
 
+        /* 🔴 OWNER LABELS - ZOOM LEVEL KE HISAB SE */
+        /* 🔴 OWNER LABELS - ZOOM LEVEL KE HISAB SE */
+        /* 🔴 OWNER LABELS - ZOOM LEVEL KE HISAB SE */
+        /* 🔴 OWNER LABELS - ZOOM LEVEL KE HISAB SE */
+        .owner-label {
+            pointer-events: none !important;
+            z-index: 1500 !important;
+        }
+
+        .owner-label div {
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+            display: none !important;
+        }
+
+        .owner-label.show div {
+            display: block !important;
+        }
+
+        /* 🔴 KHOOBSURAT OWNER TOOLTIP - SABHI SCREEN KE LIYE */
+        /* 🔴 KHOOBSURAT OWNER TOOLTIP - FULL NAME KE LIYE */
+        /* 🔴 KHOOBSURAT OWNER TOOLTIP - EK LINE MEIN */
+        .owner-tooltip {
+            background: linear-gradient(135deg, #2F3E9E 0%, #1a1a4e 100%) !important;
+            color: white !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            padding: 6px 16px !important;
+            border-radius: 10px !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+            pointer-events: none !important;
+            letter-spacing: 0.3px !important;
+            backdrop-filter: blur(4px) !important;
+            transition: transform 0.2s ease, opacity 0.2s ease !important;
+            max-width: 500px !important;
+            white-space: nowrap !important;
+            /* 🔴 EK LINE MEIN */
+        }
+
+        .owner-tooltip .leaflet-tooltip-content {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            color: white !important;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+            white-space: nowrap !important;
+            /* 🔴 EK LINE MEIN */
+        }
+
+        .owner-tooltip::before {
+            border-top-color: #2F3E9E !important;
+            border-width: 8px !important;
+            margin-top: -1px !important;
+        }
+
+        .owner-tooltip:hover {
+            transform: scale(1.05) !important;
+        }
+
         @media(max-width:768px) {
-
             #main {
-
                 flex-direction: column;
-
                 padding: 10px
             }
 
-
-
             #sidebar {
-
                 width: 100%;
-
                 max-height: 280px
             }
-
         }
     </style>
 
@@ -1115,16 +1167,35 @@
         function initMap() {
             if (map) { map.remove(); map = null; }
 
-            // 🔴 DEFAULT MAP - SATELLITE
-            const defaultMap = 'satellite';  // ✅ YEH CHANGE KARO
+            const defaultMap = 'satellite';
             const tileLayer = BASE_MAPS[defaultMap];
 
-            map = L.map('map', { zoomControl: true }).setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM);
+            map = L.map('map', {
+                zoomControl: true,
+                zoomSnap: 0.5
+            }).setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM);
 
             L.tileLayer(tileLayer.url, {
                 attribution: tileLayer.attribution,
                 maxZoom: 19
             }).addTo(map);
+
+            // 🔴🔴🔴 ZOOM EVENTS 🔴🔴🔴
+            map.on('zoomend', function () {
+                console.log('🔄 Zoomend event triggered');
+                updateOwnerLabelVisibility();
+            });
+
+            map.on('moveend', function () {
+                updateOwnerLabelVisibility();
+            });
+
+            map.on('load', function () {
+                console.log('📌 Map loaded');
+                setTimeout(function () {
+                    updateOwnerLabelVisibility();
+                }, 500);
+            });
 
             map.on('mousemove', function (e) {
                 if (!hoveredLayer) return;
@@ -1134,31 +1205,157 @@
                 }
             });
 
-            setTimeout(() => { if (map) map.invalidateSize(); }, 500);
+            setTimeout(() => {
+                if (map) map.invalidateSize();
+                setTimeout(function () {
+                    updateOwnerLabelVisibility();
+                }, 600);
+            }, 500);
         }
 
         function loadGeoJSON(url, lt) { return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() }).then(d => { d.features.forEach(f => { f.properties._layerType = lt; if (!f.properties.Status) f.properties.Status = 'IN PROGRESS' }); return d }) }
 
         function loadGeoJSON(url, lt) { return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() }).then(d => { d.features.forEach(f => { f.properties._layerType = lt; if (!f.properties.Status) f.properties.Status = 'IN PROGRESS' }); return d }) }
+        // ============================================
+        // 🔴 OWNER LABELS - Sirf Zoom In Karne Par Dikhein
+        // ============================================
+        // ============================================
+        // 🔴 OWNER LABELS - Sirf Zoom In Karne Par Dikhein
+        // ============================================
+        let ownerLabels = [];
+        let labelZoomThreshold = 15; // Zoom 10+ par labels dikhenge
 
+        function addOwnerLabels() {
+            if (ownerLabels.length > 0) {
+                ownerLabels.forEach(label => map.removeLayer(label));
+                ownerLabels = [];
+            }
+
+            const parcels = allFeatures.filter(f => f.properties._layerType === 'parcels');
+
+            parcels.forEach(f => {
+                const p = f.properties;
+                const ownerName = p.OWNER || p.owner || '';
+                const oid = getObjectId(p);
+
+                if (!ownerName) return;
+
+                try {
+                    const coords = f.geometry.coordinates[0][0];
+                    let lat = 0, lng = 0, count = 0;
+                    coords.forEach(c => {
+                        lat += c[1];
+                        lng += c[0];
+                        count++;
+                    });
+                    lat = lat / count;
+                    lng = lng / count;
+
+                    const labelIcon = L.divIcon({
+                        className: 'owner-label',
+                        html: `<div style="
+            background: rgba(47, 62, 158, 0.85);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+            cursor: default;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            text-align: center;
+            pointer-events: none;
+            max-width: 200px; /* 🔴 BADA KARO */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.3s ease;
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        ">
+            👤 ${ownerName} <!-- 🔴 FULL NAME -->
+        </div>`,
+                        iconSize: [null, null],
+                        iconAnchor: [0, 0]
+                    });
+
+                    const marker = L.marker([lat, lng], {
+                        icon: labelIcon,
+                        interactive: false,
+                        zIndexOffset: 1500
+                    });
+
+                    marker.addTo(map);
+                    ownerLabels.push(marker);
+
+                } catch (e) { }
+            });
+
+            setTimeout(function () {
+                updateOwnerLabelVisibility();
+            }, 300);
+
+            console.log('✅ Owner labels added:', ownerLabels.length);
+        }
+
+        // ============================================
+        // 🔴 OWNER LABELS VISIBILITY - FINAL FIX
+        // ============================================
+        function updateOwnerLabelVisibility() {
+            if (!map) return;
+
+            const zoom = map.getZoom();
+            // 🔴 FORCEFULLY 8 se upar show karo
+            const showLabels = zoom >= 8; // 🔴 HARD CODED 8
+
+            console.log('🔍 Zoom:', zoom, '| Show:', showLabels);
+
+            ownerLabels.forEach(label => {
+                const el = label.getElement();
+                if (el) {
+                    if (showLabels) {
+                        el.style.display = 'block';
+                        el.style.opacity = '1';
+                        el.style.visibility = 'visible';
+                        el.style.backgroundColor = 'rgba(47, 62, 158, 0.85)';
+                    } else {
+                        el.style.display = 'none';
+                        el.style.opacity = '0';
+                        el.style.visibility = 'hidden';
+                    }
+                }
+            });
+
+            // 🔴 DEBUG
+            const visibleCount = ownerLabels.filter(label => {
+                const el = label.getElement();
+                return el && el.style.display !== 'none';
+            }).length;
+            console.log('📊 Visible labels:', visibleCount);
+        }
         // 🔴🔴🔴 YEH FUNCTION ADD KARO - loadGeoJSON ke BAAD 🔴🔴🔴
         function changeBaseMap(mapType) {
             if (!map) return;
 
-            // Purani tile layer hatao
             map.eachLayer(function (layer) {
                 if (layer instanceof L.TileLayer) {
                     map.removeLayer(layer);
                 }
             });
 
-            // Naya tile layer add karo
             const tileLayer = BASE_MAPS[mapType];
             if (tileLayer) {
                 L.tileLayer(tileLayer.url, {
                     attribution: tileLayer.attribution,
                     maxZoom: 19
                 }).addTo(map);
+
+                // 🔴🔴🔴 Labels visibility update karo 🔴🔴🔴
+                setTimeout(function () {
+                    updateOwnerLabelVisibility();
+                }, 300);
 
                 showToast('🗺️ ' + mapType.charAt(0).toUpperCase() + mapType.slice(1));
             }
@@ -1212,8 +1409,16 @@
                 renderLayer();
                 updateStats();
 
+                // 🔴🔴🔴 OWNER LABELS ADD KARO 🔴🔴🔴
+                addOwnerLabels();
+
+                // 🔴🔴🔴 PEHLA VISIBILITY CHECK 🔴🔴🔴
+                setTimeout(function () {
+                    updateOwnerLabelVisibility();
+                }, 500);
+
                 hideLoading();
-            
+                showToast('✅ ' + mc + ' parcels synced');
 
                 // 🔴 DEBUG: Check karo link aaya ya nahi
                 console.log('🔗 First feature LINK:', allFeatures.find(f => f.properties._layerType === 'parcels')?.properties?.LINK);
@@ -1534,12 +1739,22 @@
             layer.feature = feature;
             if (feature.properties._layerType === 'boundary') return;
 
+            const ownerName = feature.properties.OWNER || feature.properties.owner || 'Unknown Owner';
+
+            // 🔴 FONT SIZE 11px - TAAKE LAMBA NAME BHI EK LINE MEIN AAYE
+            layer.bindTooltip(`👤 ${ownerName}`, {
+                permanent: false,
+                direction: 'top',
+                offset: [0, -10],
+                className: 'owner-tooltip',
+                opacity: 1
+            });
+
             layer.bindPopup(createPopupContent(feature), { maxWidth: 350, closeOnClick: false });
 
             layer.on('click', function (e) {
                 L.DomEvent.stopPropagation(e);
 
-                // 🔴 SABSE PEHLE - Sab features normal karo
                 if (currentLayer) {
                     currentLayer.eachLayer(function (l) {
                         if (l.feature && l.feature.properties._layerType === 'parcels') {
@@ -1551,7 +1766,6 @@
 
                 if (window.hlTimeout) clearTimeout(window.hlTimeout);
 
-                // 🔴 Sirf yeh wala RED karo
                 highlightedFeature = feature;
                 this.setStyle({
                     color: '#FF0000',
@@ -1563,7 +1777,6 @@
                 this.openPopup();
             });
 
-            // 🔴🔴🔴 POPUP CLOSE = RED HATAO 🔴🔴🔴
             layer.on('popupclose', function () {
                 if (highlightedFeature === feature) {
                     this.setStyle(getFeatureStyle(feature));
@@ -1583,6 +1796,7 @@
                     this.setStyle({ color: s.color, weight: 3, fillOpacity: 0.1, fillColor: s.color });
                     this.bringToFront();
                 }
+                this.openTooltip();
             });
 
             layer.on('mouseout', function () {
@@ -1590,9 +1804,9 @@
                 if (highlightedFeature !== feature) {
                     this.setStyle(getFeatureStyle(feature));
                 }
+                this.closeTooltip();
             });
         }
-
         function createPopupContent(feature) {
             const p = feature.properties;
             const st = p.Status || 'IN PROGRESS';
