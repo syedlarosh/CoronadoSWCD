@@ -2,721 +2,678 @@
 
 <html lang="en">
 
-
-
 <head>
 
     <meta charset="UTF-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Property Map - Final Fixed</title>
+    <title>Coronado SWCD - Property Map</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+
     <style>
+        :root {
+            --brand-dark-brown: #3A2312;
+            --brand-cream: #F7EFE3;
+            --brand-dark-green: #1E3F20;
+            --brand-light-green: #538446;
+            --brand-light-blue: #4EA9CD;
+            --brand-terracotta: #A34828;
+            --brand-gold: #c9a84c;
+            --brand-red: #FF0000;
+        }
+
         * {
-
             margin: 0;
-
             padding: 0;
-
             box-sizing: border-box
         }
 
-
-
         body {
-
             font-family: 'Inter', sans-serif;
-
-            background: #F5F7FA;
-
+            background: var(--brand-cream);
             height: 100vh;
-
             overflow: hidden
         }
 
-
-
         #app {
-
             display: flex;
-
             flex-direction: column;
-
             height: 100vh
         }
 
-
-
         header {
-
-            background: white;
-
-            padding: 12px 24px;
-
+            background: var(--brand-dark-brown);
+            padding: 6px 24px;
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
-
-            border-bottom: 1px solid #E5E7EB;
-
+            border-bottom: 3px solid var(--brand-gold);
             flex-wrap: wrap;
-
-            gap: 10px;
-
-            z-index: 10
+            gap: 8px;
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 4px 30px rgba(58, 35, 18, 0.3);
         }
 
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brand-gold), var(--brand-terracotta), var(--brand-light-blue), var(--brand-gold));
+            animation: shimmer 4s ease-in-out infinite;
+            background-size: 300% 100%;
+        }
 
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
 
         .logo {
-
-            font-size: 22px;
-
-            font-weight: 800;
-
-            color: #2F3E9E;
-
             display: flex;
-
             align-items: center;
-
-            gap: 10px
+            gap: 14px;
+            color: white;
+            text-decoration: none;
         }
 
-
-
-        .logo span {
-
-            font-size: 12px;
-
-            font-weight: 400;
-
-            color: #6B7280
+        .logo img {
+            height: 44px;
+            width: auto;
+            border-radius: 8px;
+            border: 2px solid var(--brand-gold);
+            padding: 2px;
+            background: var(--brand-cream);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .logo img:hover {
+            transform: scale(1.08) rotate(-3deg);
+            border-color: var(--brand-terracotta);
+            box-shadow: 0 0 30px rgba(201, 168, 76, 0.2);
+        }
 
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .logo-text .title {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--brand-cream);
+            letter-spacing: -0.3px;
+        }
+
+        .logo-text .title span {
+            color: var(--brand-gold);
+        }
+
+        .logo-text .subtitle {
+            font-size: 9px;
+            font-weight: 500;
+            color: rgba(247, 239, 227, 0.5);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
 
         .controls {
-
             display: flex;
-
-            gap: 8px;
-
+            gap: 6px;
             align-items: center;
-
             flex-wrap: wrap
         }
 
+        .controls select {
+            padding: 6px 12px;
+            border: 1px solid rgba(247, 239, 227, 0.12);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            background: rgba(247, 239, 227, 0.06);
+            color: var(--brand-cream);
+            height: 34px;
+            cursor: pointer;
+            transition: all 0.3s;
+            outline: none;
+        }
 
+        .controls select:hover {
+            background: rgba(247, 239, 227, 0.12);
+            border-color: var(--brand-gold);
+        }
+
+        .controls select option {
+            background: var(--brand-dark-brown);
+            color: var(--brand-cream);
+        }
 
         .controls button {
-
             padding: 6px 14px;
-
             border: none;
-
             border-radius: 8px;
-
-            font-weight: 600;
-
-            font-size: 12px;
-
+            font-weight: 700;
+            font-size: 9px;
             cursor: pointer;
-
-            transition: all .2s;
-
-            height: 36px;
-
-            white-space: nowrap
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 34px;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
         }
 
+        .controls button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0);
+            transition: 0.3s;
+        }
 
+        .controls button:hover::before {
+            background: rgba(255, 255, 255, 0.08);
+        }
 
         .controls button:hover {
-
-            transform: translateY(-2px);
-
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .15)
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
-
-
 
         .btn-inprogress {
-
-            background: #FF8C00;
-
-            color: white
+            background: var(--brand-terracotta);
+            color: var(--brand-cream);
         }
-
-
 
         .btn-completed {
-
-            background: #10B981;
-
-            color: white
+            background: var(--brand-light-blue);
+            color: white;
         }
-
-
 
         .btn-reset {
-
-            background: #6B7280;
-
-            color: white
+            background: rgba(247, 239, 227, 0.08);
+            color: var(--brand-cream);
         }
 
-
+        .btn-reset:hover {
+            background: rgba(247, 239, 227, 0.16);
+        }
 
         .btn-save {
-
-            background: #2F3E9E;
-
-            color: white
+            background: var(--brand-gold);
+            color: var(--brand-dark-brown);
+            font-weight: 800;
         }
 
-
+        .btn-save:hover {
+            background: #dbb85c;
+            box-shadow: 0 4px 25px rgba(201, 168, 76, 0.4);
+        }
 
         .btn-clear {
-
-            background: #EF4444;
-
-            color: white
+            background: rgba(247, 239, 227, 0.08);
+            color: var(--brand-cream);
         }
 
-
+        .btn-clear:hover {
+            background: rgba(163, 72, 40, 0.4);
+        }
 
         #main {
-
             display: flex;
-
             flex: 1;
-
             overflow: hidden;
-
-            gap: 16px;
-
-            padding: 16px
+            gap: 0;
+            padding: 0;
+            background: var(--brand-cream);
         }
-
-
 
         #sidebar {
-
-            width: 340px;
-
-            background: white;
-
-            border-radius: 16px;
-
-            padding: 16px 20px;
-
+            width: 370px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 16px 20px 20px;
             overflow-y: auto;
-
-            box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
-
-            flex-shrink: 0
+            border-right: 1px solid rgba(58, 35, 18, 0.06);
+            flex-shrink: 0;
+            box-shadow: 4px 0 30px rgba(58, 35, 18, 0.04);
+            display: flex;
+            flex-direction: column;
         }
-
-
 
         #sidebar h3 {
-
-            font-size: 13px;
-
+            font-size: 9px;
             font-weight: 700;
-
-            color: #2F3E9E;
-
-            margin-bottom: 12px;
-
-            text-transform: uppercase
+            color: var(--brand-dark-brown);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--brand-gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-
+        #sidebar h3::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--brand-gold), transparent);
+        }
 
         .stat-grid {
-
             display: grid;
-
             grid-template-columns: repeat(3, 1fr);
-
-            gap: 8px;
-
-            margin-bottom: 20px
+            gap: 6px;
+            margin-bottom: 14px;
         }
-
-
 
         .stat-card {
-
-            background: #F9FAFE;
-
+            background: rgba(247, 239, 227, 0.5);
+            backdrop-filter: blur(4px);
             border-radius: 10px;
-
-            padding: 10px;
-
+            padding: 10px 4px;
             text-align: center;
-
-            border: 1px solid #E5E7EB
+            border: 1px solid rgba(247, 239, 227, 0.6);
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(58, 35, 18, 0.04);
         }
 
-
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(58, 35, 18, 0.08);
+            border-color: var(--brand-gold);
+        }
 
         .stat-card .stat-value {
-
             font-size: 22px;
-
-            font-weight: 800;
-
-            display: block
+            font-weight: 900;
+            display: block;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
         }
-
-
 
         .stat-card .stat-label {
-
-            font-size: 10px;
-
-            color: #6B7280;
-
-            font-weight: 500
+            font-size: 7px;
+            color: var(--brand-dark-brown);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+            opacity: 0.6;
         }
-
-
 
         .stat-card.inprogress .stat-value {
-
-            color: #FF8C00
+            color: var(--brand-terracotta);
         }
-
-
 
         .stat-card.completed .stat-value {
-
-            color: #10B981
+            color: var(--brand-light-blue);
         }
 
-
+        .stat-card.total .stat-value {
+            color: var(--brand-dark-brown);
+        }
 
         .filter-group {
-
-            margin-bottom: 12px
+            margin-bottom: 8px;
         }
-
-
 
         .filter-group label {
-
             display: block;
-
-            font-size: 11px;
-
-            font-weight: 600;
-
-            color: #4B5563;
-
-            margin-bottom: 4px
+            font-size: 7px;
+            font-weight: 800;
+            color: var(--brand-dark-brown);
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.6;
         }
-
-
 
         .filter-group input,
-
         .filter-group select {
-
             width: 100%;
-
-            padding: 8px 10px;
-
-            border: 1px solid #E5E7EB;
-
+            padding: 7px 12px;
+            border: 1.5px solid rgba(58, 35, 18, 0.06);
             border-radius: 8px;
-
             font-family: 'Inter', sans-serif;
-
-            font-size: 12px;
-
-            background: white
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            transition: all 0.25s;
+            color: var(--brand-dark-brown);
         }
 
-
+        .filter-group input::placeholder {
+            color: rgba(58, 35, 18, 0.3);
+        }
 
         .filter-group input:focus,
-
         .filter-group select:focus {
-
             outline: none;
-
-            border-color: #2F3E9E;
-
-            box-shadow: 0 0 0 3px rgba(47, 62, 158, .1)
+            border-color: var(--brand-gold);
+            box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.08);
+            background: white;
         }
-
-
 
         .filter-actions {
-
             display: flex;
-
-            gap: 8px;
-
-            margin-top: 10px
+            gap: 6px;
+            margin-top: 4px;
+            margin-bottom: 10px;
         }
-
-
 
         .filter-actions button {
-
             flex: 1;
-
-            padding: 6px;
-
-            border: 1px solid #E5E7EB;
-
+            padding: 7px;
+            border: 1.5px solid rgba(58, 35, 18, 0.06);
             border-radius: 8px;
-
-            background: white;
-
-            font-size: 11px;
-
-            font-weight: 600;
-
-            cursor: pointer
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(4px);
+            font-size: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--brand-dark-brown);
         }
-
-
 
         .filter-actions button:hover {
-
-            background: #F9FAFE;
-
-            border-color: #2F3E9E
+            background: white;
+            border-color: var(--brand-gold);
+            color: var(--brand-terracotta);
+            box-shadow: 0 4px 16px rgba(163, 72, 40, 0.08);
         }
 
+        .charts-section {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(58, 35, 18, 0.06);
+        }
 
+        .charts-section h4 {
+            font-size: 8px;
+            font-weight: 700;
+            color: var(--brand-dark-brown);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.5;
+            text-align: center;
+        }
+
+        .chart-row {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .chart-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(4px);
+            border-radius: 10px;
+            padding: 6px;
+            border: 1px solid rgba(58, 35, 18, 0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            position: relative;
+        }
+
+        .chart-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+            max-height: 100%;
+        }
+
+        .chart-box .chart-label {
+            font-size: 6px;
+            font-weight: 700;
+            color: var(--brand-dark-brown);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+            margin-top: 2px;
+        }
 
         #map-container {
-
             flex: 1;
-
-            border-radius: 16px;
-
-            overflow: hidden;
-
-            box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
-
-            position: relative
+            position: relative;
+            background: #e8e4dc;
         }
-
-
 
         #map {
-
             width: 100%;
-
             height: 100%;
-
-            background: #EFF3F8
+            background: #e8e4dc;
         }
-
-
 
         .map-legend {
-
             position: absolute;
-
-            bottom: 20px;
-
-            left: 20px;
-
-            background: rgba(255, 255, 255, .95);
-
+            bottom: 24px;
+            left: 24px;
+            background: rgba(247, 239, 227, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             padding: 10px 16px;
-
             border-radius: 12px;
-
             z-index: 400;
-
-            font-size: 11px;
-
-            border: 1px solid #E5E7EB
+            font-size: 10px;
+            border: 1px solid rgba(58, 35, 18, 0.06);
+            box-shadow: 0 8px 32px rgba(58, 35, 18, 0.08);
         }
-
-
 
         .legend-item {
-
             display: flex;
-
             align-items: center;
-
-            gap: 8px;
-
-            margin-bottom: 4px
+            gap: 10px;
+            margin-bottom: 3px;
+            font-weight: 600;
+            color: var(--brand-dark-brown);
         }
 
-
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
 
         .legend-color {
-
             width: 14px;
-
             height: 14px;
-
-            border-radius: 4px
+            border-radius: 4px;
+            flex-shrink: 0;
         }
-
-
 
         .legend-color.boundary {
-
             background: transparent;
-
-            border: 2px solid #FF0000
+            border: 2.5px solid #FF0000;
         }
 
+        .legend-color.inprogress {
+            background: var(--brand-terracotta);
+        }
 
+        .legend-color.completed {
+            background: var(--brand-light-blue);
+        }
 
         .toast {
-
             position: fixed;
-
             bottom: 30px;
-
             right: 30px;
-
             padding: 12px 24px;
-
-            border-radius: 12px;
-
-            background: #2F3E9E;
-
-            color: white;
-
-            font-size: 13px;
-
-            font-weight: 500;
-
+            border-radius: 10px;
+            background: var(--brand-dark-brown);
+            color: var(--brand-cream);
+            font-size: 12px;
+            font-weight: 600;
             z-index: 10000;
-
-            animation: slideUp .3s
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 12px 48px rgba(58, 35, 18, 0.2);
+            border: 1px solid var(--brand-gold);
         }
-
-
 
         .toast.error {
-
-            background: #EF4444
+            background: var(--brand-terracotta);
+            border-color: var(--brand-terracotta);
         }
 
-
+        .toast.success {
+            background: var(--brand-light-blue);
+            border-color: var(--brand-light-blue);
+        }
 
         @keyframes slideUp {
-
             from {
-
                 opacity: 0;
-
-                transform: translateY(20px)
+                transform: translateY(30px) scale(0.95);
             }
-
-
 
             to {
-
                 opacity: 1;
-
-                transform: translateY(0)
+                transform: translateY(0) scale(1);
             }
-
         }
-
-
 
         @keyframes spin {
-
             to {
-
                 transform: rotate(360deg)
             }
-
         }
-
-
 
         #loadingOverlay {
-
             position: fixed;
-
             top: 0;
-
             left: 0;
-
             width: 100%;
-
             height: 100%;
-
-            background: rgba(47, 62, 158, .9);
-
+            background: rgba(58, 35, 18, 0.92);
+            backdrop-filter: blur(12px);
             display: none;
-
             justify-content: center;
-
             align-items: center;
-
-            z-index: 9999
+            z-index: 9999;
         }
-
-
 
         .loading-card {
-
-            background: white;
-
-            padding: 40px;
-
+            background: rgba(247, 239, 227, 0.05);
+            backdrop-filter: blur(20px);
+            padding: 40px 48px;
             border-radius: 20px;
-
-            text-align: center
+            text-align: center;
+            border: 1px solid rgba(247, 239, 227, 0.06);
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.3);
         }
 
-
+        .loading-card .brand {
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(247, 239, 227, 0.4);
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
 
         .spinner {
-
             width: 40px;
-
             height: 40px;
-
-            border: 3px solid #E5E7EB;
-
-            border-top-color: #2F3E9E;
-
+            border: 3px solid rgba(247, 239, 227, 0.08);
+            border-top-color: var(--brand-gold);
             border-radius: 50%;
-
-            animation: spin .8s linear infinite;
-
-            margin: 0 auto 16px
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 14px;
         }
 
-
+        #loadingText {
+            color: rgba(247, 239, 227, 0.6);
+            font-weight: 400;
+            font-size: 13px;
+        }
 
         .suggestions-wrapper {
-
-            position: relative
+            position: relative;
         }
-
-
 
         .suggestions-dropdown {
-
             position: absolute;
-
-            top: 100%;
-
+            top: calc(100% + 4px);
             left: 0;
-
             right: 0;
-
-            background: white;
-
-            border: 1px solid #E5E7EB;
-
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(58, 35, 18, 0.06);
             border-radius: 8px;
-
-            max-height: 220px;
-
+            max-height: 160px;
             overflow-y: auto;
-
             z-index: 9999;
-
-            box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
-
+            box-shadow: 0 16px 48px rgba(58, 35, 18, 0.1);
             display: none;
-
-            margin-top: 4px
         }
-
-
 
         .suggestions-dropdown.show {
-
-            display: block
+            display: block;
         }
-
-
 
         .suggestions-dropdown .suggestion-item {
-
-            padding: 10px 14px;
-
+            padding: 8px 14px;
             cursor: pointer;
-
-            font-size: 12px;
-
-            border-bottom: 1px solid #F3F4F6;
-
-            transition: all .15s;
-
-            line-height: 1.5;
-
+            font-size: 11px;
+            border-bottom: 1px solid rgba(58, 35, 18, 0.04);
+            transition: all 0.15s;
+            line-height: 1.4;
         }
-
-
 
         .suggestions-dropdown .suggestion-item:hover {
-
-            background: #EEF2FF
+            background: rgba(247, 239, 227, 0.5);
         }
-
-
 
         .suggestion-item .main {
-
-            font-weight: 600;
-
-            color: #1F2937;
-
+            font-weight: 700;
+            color: var(--brand-dark-brown);
             display: block;
-
         }
-
-
 
         .suggestion-item .sub {
-
-            font-size: 10px;
-
-            color: #6B7280;
-
+            font-size: 9px;
+            color: rgba(58, 35, 18, 0.5);
             display: block;
-
-            margin-top: 3px;
-
+            margin-top: 1px;
         }
-
-
 
         .suggestion-item:hover .main {
-
-            color: #2F3E9E
+            color: var(--brand-terracotta);
         }
 
-
-
-        /* 🔴 OWNER LABELS - ZOOM LEVEL KE HISAB SE */
-        /* 🔴 OWNER LABELS - ZOOM LEVEL KE HISAB SE */
-        /* 🔴 OWNER LABELS - ZOOM LEVEL KE HISAB SE */
-        /* 🔴 OWNER LABELS - ZOOM LEVEL KE HISAB SE */
         .owner-label {
             pointer-events: none !important;
             z-index: 1500 !important;
@@ -724,7 +681,7 @@
 
         .owner-label div {
             transition: all 0.3s ease;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             display: none !important;
         }
 
@@ -732,63 +689,118 @@
             display: block !important;
         }
 
-        /* 🔴 KHOOBSURAT OWNER TOOLTIP - SABHI SCREEN KE LIYE */
-        /* 🔴 KHOOBSURAT OWNER TOOLTIP - FULL NAME KE LIYE */
-        /* 🔴 KHOOBSURAT OWNER TOOLTIP - EK LINE MEIN */
         .owner-tooltip {
-            background: linear-gradient(135deg, #2F3E9E 0%, #1a1a4e 100%) !important;
-            color: white !important;
+            background: var(--brand-dark-brown) !important;
+            backdrop-filter: blur(12px) !important;
+            color: var(--brand-cream) !important;
             font-family: 'Inter', sans-serif !important;
-            font-size: 12px !important;
+            font-size: 11px !important;
             font-weight: 600 !important;
-            padding: 6px 16px !important;
-            border-radius: 10px !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+            padding: 5px 16px !important;
+            border-radius: 8px !important;
+            border: 1px solid var(--brand-gold) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
             pointer-events: none !important;
-            letter-spacing: 0.3px !important;
-            backdrop-filter: blur(4px) !important;
-            transition: transform 0.2s ease, opacity 0.2s ease !important;
+            letter-spacing: 0.2px !important;
             max-width: 500px !important;
             white-space: nowrap !important;
-            /* 🔴 EK LINE MEIN */
         }
 
         .owner-tooltip .leaflet-tooltip-content {
-            font-size: 12px !important;
+            font-size: 11px !important;
             font-weight: 600 !important;
-            color: white !important;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+            color: var(--brand-cream) !important;
             white-space: nowrap !important;
-            /* 🔴 EK LINE MEIN */
         }
 
         .owner-tooltip::before {
-            border-top-color: #2F3E9E !important;
-            border-width: 8px !important;
+            border-top-color: var(--brand-dark-brown) !important;
+            border-width: 7px !important;
             margin-top: -1px !important;
         }
 
-        .owner-tooltip:hover {
-            transform: scale(1.05) !important;
+        #sidebar::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: var(--brand-gold);
+            border-radius: 10px;
+        }
+
+        .suggestions-dropdown::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .suggestions-dropdown::-webkit-scrollbar-thumb {
+            background: var(--brand-gold);
+            border-radius: 10px;
         }
 
         @media(max-width:768px) {
             #main {
                 flex-direction: column;
-                padding: 10px
             }
 
             #sidebar {
                 width: 100%;
-                max-height: 280px
+                max-height: 300px;
+                border-right: none;
+                border-bottom: 1px solid rgba(58, 35, 18, 0.06);
+                padding: 12px 14px;
+            }
+
+            header {
+                padding: 6px 12px;
+            }
+
+            .logo img {
+                height: 30px;
+            }
+
+            .logo-text .title {
+                font-size: 14px;
+            }
+
+            .controls button {
+                font-size: 7px;
+                padding: 4px 8px;
+                height: 26px;
+            }
+
+            .controls select {
+                font-size: 9px;
+                padding: 4px 8px;
+                height: 26px;
+            }
+
+            .stat-grid {
+                gap: 4px;
+            }
+
+            .stat-card .stat-value {
+                font-size: 18px;
+            }
+
+            .chart-row {
+                flex-direction: row;
+                gap: 6px;
+            }
+
+            .map-legend {
+                bottom: 12px;
+                left: 12px;
+                padding: 6px 10px;
+                font-size: 8px;
             }
         }
     </style>
 
 </head>
-
-
 
 <body>
 
@@ -796,25 +808,49 @@
 
         <header>
 
-            <div class="logo">🏘️ Property Map <span></span></div>
+            <a href="https://www.coronadoswcdnm.gov/" target="_blank" class="logo">
+
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJXDDk4QSnrYUCBBtcHjRxIWNSgX6C5YJMRXPvZjhywg&s"
+                    alt="Coronado SWCD Logo" onerror="this.style.display='none'">
+
+                <div class="logo-text">
+
+                    <div class="title">Property <span>Map</span></div>
+
+                    <div class="subtitle">Coronado SWCD · New Mexico</div>
+
+                </div>
+
+            </a>
 
             <div class="controls">
-                <!-- 🔴 YEH DROPDOWN ADD KARO - SABSE PEHLE -->
-                <select id="baseMapSelector"
-                    style="padding:6px 12px;border:1px solid #E5E7EB;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;background:white;height:36px;cursor:pointer;">
+
+                <select id="baseMapSelector">
+
                     <option value="carto">🗺️ Carto Light</option>
+
                     <option value="osm">🌍 OpenStreetMap</option>
-                    <option value="satellite" selected>🛰️ Satellite</option> <!-- 🔴 YAHAN selected ADD KARO -->
+
+                    <option value="satellite" selected>🛰️ Satellite</option>
+
                     <option value="topo">⛰️ Topographic</option>
+
                     <option value="dark">🌙 Dark Mode</option>
+
                     <option value="streets">🏙️ Streets</option>
+
                 </select>
 
-                <button id="markInProgress" class="btn-inprogress">⏳ IN PROGRESS</button>
-                <button id="markCompleted" class="btn-completed">✅ COMPLETED</button>
+                <button id="markInProgress" class="btn-inprogress">⏳ In Progress</button>
+
+                <button id="markCompleted" class="btn-completed">✅ Completed</button>
+
                 <button id="clearSelection" class="btn-clear">✖️ Clear</button>
+
                 <button id="resetChanges" class="btn-reset">↩️ Reset</button>
+
                 <button id="saveChanges" class="btn-save">💾 Save</button>
+
             </div>
 
         </header>
@@ -829,14 +865,29 @@
 
                     <div class="stat-grid">
 
-                        <div class="stat-card"><span class="stat-value" id="totalCount">0</span><span
-                                class="stat-label">Total</span></div>
+                        <div class="stat-card total">
 
-                        <div class="stat-card inprogress"><span class="stat-value" id="inprogressCount">0</span><span
-                                class="stat-label">IN PROGRESS</span></div>
+                            <span class="stat-value" id="totalCount">0</span>
 
-                        <div class="stat-card completed"><span class="stat-value" id="completedCount">0</span><span
-                                class="stat-label">COMPLETED</span></div>
+                            <span class="stat-label">Total</span>
+
+                        </div>
+
+                        <div class="stat-card inprogress">
+
+                            <span class="stat-value" id="inprogressCount">0</span>
+
+                            <span class="stat-label">In Progress</span>
+
+                        </div>
+
+                        <div class="stat-card completed">
+
+                            <span class="stat-value" id="completedCount">0</span>
+
+                            <span class="stat-label">Completed</span>
+
+                        </div>
 
                     </div>
 
@@ -844,23 +895,32 @@
 
                 <div class="filters">
 
-                    <h3>🔍 Interconnected Filters</h3>
+                    <h3>🔍 Filters</h3>
 
-                    <div class="filter-group"><label>Status</label><select id="statusFilter" onchange="applyFilters()">
+                    <div class="filter-group">
+
+                        <label>Status</label>
+
+                        <select id="statusFilter" onchange="applyFilters()">
 
                             <option value="ALL">All</option>
 
-                            <option value="IN PROGRESS">⏳ IN PROGRESS</option>
+                            <option value="IN PROGRESS">⏳ In Progress</option>
 
-                            <option value="COMPLETED">✅ COMPLETED</option>
+                            <option value="COMPLETED">✅ Completed</option>
 
-                        </select></div>
+                        </select>
 
-                    <div class="filter-group"><label>Owner</label>
+                    </div>
 
-                        <div class="suggestions-wrapper"><input type="text" id="ownerFilter"
-                                placeholder="Search owner..." autocomplete="off" oninput="showSuggestions('owner')"
-                                onfocus="showSuggestions('owner')">
+                    <div class="filter-group">
+
+                        <label>Owner</label>
+
+                        <div class="suggestions-wrapper">
+
+                            <input type="text" id="ownerFilter" placeholder="Search owner..." autocomplete="off"
+                                oninput="showSuggestions('owner')" onfocus="showSuggestions('owner')">
 
                             <div class="suggestions-dropdown" id="ownerSuggestions"></div>
 
@@ -868,11 +928,14 @@
 
                     </div>
 
-                    <div class="filter-group"><label>Parcel</label>
+                    <div class="filter-group">
 
-                        <div class="suggestions-wrapper"><input type="text" id="parcelFilter"
-                                placeholder="Search parcel..." autocomplete="off" oninput="showSuggestions('parcel')"
-                                onfocus="showSuggestions('parcel')">
+                        <label>Parcel</label>
+
+                        <div class="suggestions-wrapper">
+
+                            <input type="text" id="parcelFilter" placeholder="Search parcel..." autocomplete="off"
+                                oninput="showSuggestions('parcel')" onfocus="showSuggestions('parcel')">
 
                             <div class="suggestions-dropdown" id="parcelSuggestions"></div>
 
@@ -880,11 +943,14 @@
 
                     </div>
 
-                    <div class="filter-group"><label>Address</label>
+                    <div class="filter-group">
 
-                        <div class="suggestions-wrapper"><input type="text" id="addressFilter"
-                                placeholder="Search address..." autocomplete="off" oninput="showSuggestions('address')"
-                                onfocus="showSuggestions('address')">
+                        <label>Address</label>
+
+                        <div class="suggestions-wrapper">
+
+                            <input type="text" id="addressFilter" placeholder="Search address..." autocomplete="off"
+                                oninput="showSuggestions('address')" onfocus="showSuggestions('address')">
 
                             <div class="suggestions-dropdown" id="addressSuggestions"></div>
 
@@ -892,9 +958,37 @@
 
                     </div>
 
-                    <div class="filter-actions"><button id="clearFiltersBtn" onclick="clearAllFilters()">✖️ Clear
+                    <div class="filter-actions">
 
-                            All</button></div>
+                        <button id="clearFiltersBtn" onclick="clearAllFilters()">✖️ Clear All</button>
+
+                    </div>
+
+                </div>
+
+                <div class="charts-section">
+
+                    <h4>📈 Status Distribution</h4>
+
+                    <div class="chart-row">
+
+                        <div class="chart-box">
+
+                            <canvas id="pieChart"></canvas>
+
+                            <span class="chart-label">Pie Chart</span>
+
+                        </div>
+
+                        <div class="chart-box">
+
+                            <canvas id="barChart"></canvas>
+
+                            <span class="chart-label">Bar Chart</span>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
@@ -908,25 +1002,25 @@
 
                     <div class="legend-item">
 
-                        <div class="legend-color boundary"></div><span>Boundary</span>
+                        <div class="legend-color boundary"></div>
+
+                        <span>Boundary</span>
 
                     </div>
 
                     <div class="legend-item">
 
-                        <div class="legend-color"
-                            style="background:transparent;border:2px solid #FF8C00;width:14px;height:14px;border-radius:4px">
+                        <div class="legend-color inprogress"></div>
 
-                        </div><span>IN PROGRESS</span>
+                        <span>In Progress</span>
 
                     </div>
 
                     <div class="legend-item">
 
-                        <div class="legend-color"
-                            style="background:transparent;border:2px solid #10B981;width:14px;height:14px;border-radius:4px">
+                        <div class="legend-color completed"></div>
 
-                        </div><span>COMPLETED</span>
+                        <span>Completed</span>
 
                     </div>
 
@@ -942,9 +1036,11 @@
 
         <div class="loading-card">
 
+            <div class="brand">🏔️ Coronado SWCD</div>
+
             <div class="spinner"></div>
 
-            <p id="loadingText">Loading...</p>
+            <p id="loadingText">Loading map data...</p>
 
         </div>
 
@@ -952,20 +1048,25 @@
 
 
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
 
     <script>
-
         const CONFIG = {
             BOUNDARY_URL: 'Boundary.geojson',
             PARCELS_URL: 'Parcels.geojson',
             SHEET_CSV_URL: 'https://docs.google.com/spreadsheets/d/1rB5ra-QHYh3QOPHu0rvRpkVs9ackeFK4HB1buB2oxKI/export?format=csv&gid=0',
             SHEET_WRITE_URL: 'https://script.google.com/macros/s/AKfycbwufWfKk3FEREcNvHDIDz8RLIV3ilXx5WXuCsgji78W261ZyXH5Ml_886PEV9maz2TA/exec',
-            DEFAULT_VIEW: [38, -96], DEFAULT_ZOOM: 5,
-            COLORS: { 'IN PROGRESS': '#FF8C00', 'COMPLETED': '#10B981', 'BOUNDARY': '#FF0000', 'HIGHLIGHT': '#FF0000' }
+            DEFAULT_VIEW: [38, -96],
+            DEFAULT_ZOOM: 5,
+            COLORS: {
+                'IN PROGRESS': '#A34828',
+                'COMPLETED': '#4EA9CD',
+                'BOUNDARY': '#FF0000',
+                'HIGHLIGHT': '#A34828'
+            }
         };
 
-        // 🔴🔴🔴 YEH BASE_MAPS OBJECT ADD KARO 🔴🔴🔴
         const BASE_MAPS = {
             carto: {
                 url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
@@ -993,21 +1094,52 @@
             }
         };
 
-        let map, currentLayer, allFeatures = [], selectedFeatures = [], originalData = new Map();
+        let map, currentLayer, allFeatures = [],
+            selectedFeatures = [],
+            originalData = new Map();
 
-        let hasChanges = false, isDataLoaded = false, hoveredLayer = null, highlightedFeature = null;
+        let hasChanges = false,
+            isDataLoaded = false,
+            hoveredLayer = null,
+            highlightedFeature = null;
 
-        let sheetDataMap = new Map(), allOwners = [], allParcels = [], allAddresses = [], activeSuggestionsDiv = null;
+        let sheetDataMap = new Map(),
+            allOwners = [],
+            allParcels = [],
+            allAddresses = [],
+            activeSuggestionsDiv = null;
+
+        let pieChartInstance = null;
+        let barChartInstance = null;
 
 
 
-        function getObjectId(p) { return (p.OBJECTID_12 || p.objectid_12 || p.OBJECTID || p.objectid || p.FID || p.fid || '').toString().trim() }
+        function getObjectId(p) {
+            return (p.OBJECTID_12 || p.objectid_12 || p.OBJECTID || p.objectid || p.FID || p.fid || '')
+                .toString()
+                .trim()
+        }
 
-        function showLoading(m) { document.getElementById('loadingText').textContent = m; document.getElementById('loadingOverlay').style.display = 'flex' }
+        function showLoading(m) {
+            document.getElementById('loadingText').textContent = m; document.getElementById(
+                'loadingOverlay').style.display = 'flex'
+        }
 
         function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none' }
 
-        function showToast(m, e) { const x = document.querySelector('.toast'); if (x) x.remove(); const t = document.createElement('div'); t.className = 'toast' + (e ? ' error' : ''); t.textContent = m; document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300) }, 3000) }
+        function showToast(m, e) {
+            const x = document.querySelector('.toast');
+            if (x) x.remove();
+            const t = document.createElement('div');
+            t.className = 'toast' + (e ? ' error' : ' success');
+            t.textContent = m;
+            document.body.appendChild(t);
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transition = 'opacity .3s';
+                setTimeout(() => t.remove(), 300)
+            }, 3000)
+        }
 
 
 
@@ -1021,14 +1153,13 @@
 
                 const h = rows[0].split(',').map(hd => hd.trim().toUpperCase());
 
-                // 🔴 SAARE COLUMNS KE INDICES - LINK BHI ADD KARO
                 const oi = h.indexOf('OBJECTID_12');
                 const ai = h.indexOf('ADDRESS');
                 const si = h.indexOf('SIGNER');
                 const owi = h.indexOf('OWNER');
                 const pi = h.indexOf('PARCEL');
                 const sti = h.indexOf('STATUS');
-                const li = h.indexOf('LINK'); // 🔴 LINK COLUMN ADD KARO
+                const li = h.indexOf('LINK');
 
                 const dm = new Map();
 
@@ -1043,12 +1174,11 @@
                             owner: owi >= 0 ? (c[owi] || '').trim() : '',
                             parcel: pi >= 0 ? (c[pi] || '').trim() : '',
                             status: sti >= 0 ? (c[sti] || 'IN PROGRESS').trim() : 'IN PROGRESS',
-                            link: li >= 0 ? (c[li] || '').trim() : '' // 🔴 LINK STORE KARO
+                            link: li >= 0 ? (c[li] || '').trim() : ''
                         });
                     }
                 }
                 console.log('✅ Sheet:', dm.size, 'rows');
-                console.log('🔗 Sample link:', dm.size > 0 ? Array.from(dm.values())[0].link : 'No link');
                 return dm;
             } catch (e) {
                 console.error('Sheet Error:', e);
@@ -1056,13 +1186,19 @@
             }
         }
 
-        function parseCSVRow(row) { const r = []; let cur = '', iq = false; for (let i = 0; i < row.length; i++) { const ch = row[i]; if (ch === '"') iq = !iq; else if (ch === ',' && !iq) { r.push(cur.trim()); cur = '' } else cur += ch } r.push(cur.trim()); return r.map(v => v.replace(/^"|"$/g, '')) }
+        function parseCSVRow(row) {
+            const r = [];
+            let cur = '',
+                iq = false; for (let i = 0; i < row.length; i++) {
+                    const ch = row[i]; if (ch === '"') iq = !iq; else if (
+                        ch === ',' && !iq) {
+                        r.push(cur.trim());
+                        cur = ''
+                    } else cur += ch
+                } r.push(cur.trim()); return r.map(v => v.replace(/^"|"$/g, ''))
+        }
 
 
-
-        // 🔴🔴🔴 FIXED: Har OBJECTID_12 ka apna entry
-
-        // 🔴🔴🔴 ABSOLUTE FINAL FIX - Har field guaranteed
 
         function updateAutocompleteFromSheet() {
             allOwners = [];
@@ -1073,7 +1209,7 @@
                 const ownerValue = row.owner || '';
                 const parcelValue = row.parcel || '';
                 const addressValue = row.address || '';
-                const linkValue = row.link || ''; // 🔴 LINK BHI STORE KARO
+                const linkValue = row.link || '';
 
                 if (ownerValue) {
                     allOwners.push({
@@ -1134,7 +1270,7 @@
                                 OWNER: f.properties.OWNER || f.properties.owner || '',
                                 PARCEL: f.properties.PARCEL || f.properties.parcel || '',
                                 STATUS: f.properties.Status || 'IN PROGRESS',
-                                LINK: f.properties.LINK || f.properties.link || '' // 🔴 LINK BHI SAVE KARO
+                                LINK: f.properties.LINK || f.properties.link || ''
                             });
                         }
                     }
@@ -1165,7 +1301,10 @@
 
 
         function initMap() {
-            if (map) { map.remove(); map = null; }
+            if (map) {
+                map.remove();
+                map = null;
+            }
 
             const defaultMap = 'satellite';
             const tileLayer = BASE_MAPS[defaultMap];
@@ -1180,9 +1319,7 @@
                 maxZoom: 19
             }).addTo(map);
 
-            // 🔴🔴🔴 ZOOM EVENTS 🔴🔴🔴
             map.on('zoomend', function () {
-                console.log('🔄 Zoomend event triggered');
                 updateOwnerLabelVisibility();
             });
 
@@ -1191,7 +1328,6 @@
             });
 
             map.on('load', function () {
-                console.log('📌 Map loaded');
                 setTimeout(function () {
                     updateOwnerLabelVisibility();
                 }, 500);
@@ -1213,17 +1349,19 @@
             }, 500);
         }
 
-        function loadGeoJSON(url, lt) { return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() }).then(d => { d.features.forEach(f => { f.properties._layerType = lt; if (!f.properties.Status) f.properties.Status = 'IN PROGRESS' }); return d }) }
+        function loadGeoJSON(url, lt) {
+            return fetch(url).then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status); return r
+                    .json()
+            }).then(d => {
+                d.features.forEach(f => {
+                    f.properties._layerType = lt; if (!f.properties
+                        .Status) f.properties.Status = 'IN PROGRESS'
+                }); return d
+            })
+        }
 
-        function loadGeoJSON(url, lt) { return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() }).then(d => { d.features.forEach(f => { f.properties._layerType = lt; if (!f.properties.Status) f.properties.Status = 'IN PROGRESS' }); return d }) }
-        // ============================================
-        // 🔴 OWNER LABELS - Sirf Zoom In Karne Par Dikhein
-        // ============================================
-        // ============================================
-        // 🔴 OWNER LABELS - Sirf Zoom In Karne Par Dikhein
-        // ============================================
         let ownerLabels = [];
-        let labelZoomThreshold = 15; // Zoom 10+ par labels dikhenge
 
         function addOwnerLabels() {
             if (ownerLabels.length > 0) {
@@ -1242,7 +1380,9 @@
 
                 try {
                     const coords = f.geometry.coordinates[0][0];
-                    let lat = 0, lng = 0, count = 0;
+                    let lat = 0,
+                        lng = 0,
+                        count = 0;
                     coords.forEach(c => {
                         lat += c[1];
                         lng += c[0];
@@ -1254,28 +1394,30 @@
                     const labelIcon = L.divIcon({
                         className: 'owner-label',
                         html: `<div style="
-            background: rgba(47, 62, 158, 0.85);
-            color: white;
-            padding: 2px 10px;
-            border-radius: 10px;
+            background: rgba(58, 35, 18, 0.85);
+            backdrop-filter: blur(6px);
+            color: #F7EFE3;
+            padding: 2px 12px;
+            border-radius: 8px;
             font-size: 9px;
-            font-weight: 600;
+            font-weight: 700;
             font-family: 'Inter', sans-serif;
             white-space: nowrap;
             cursor: default;
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
             text-align: center;
             pointer-events: none;
-            max-width: 200px; /* 🔴 BADA KARO */
+            max-width: 200px;
             overflow: hidden;
             text-overflow: ellipsis;
             transition: all 0.3s ease;
             display: block;
             opacity: 1;
             visibility: visible;
+            letter-spacing: 0.2px;
         ">
-            👤 ${ownerName} <!-- 🔴 FULL NAME -->
+            👤 ${ownerName}
         </div>`,
                         iconSize: [null, null],
                         iconAnchor: [0, 0]
@@ -1300,17 +1442,11 @@
             console.log('✅ Owner labels added:', ownerLabels.length);
         }
 
-        // ============================================
-        // 🔴 OWNER LABELS VISIBILITY - FINAL FIX
-        // ============================================
         function updateOwnerLabelVisibility() {
             if (!map) return;
 
             const zoom = map.getZoom();
-            // 🔴 FORCEFULLY 8 se upar show karo
-            const showLabels = zoom >= 8; // 🔴 HARD CODED 8
-
-            console.log('🔍 Zoom:', zoom, '| Show:', showLabels);
+            const showLabels = zoom >= 8;
 
             ownerLabels.forEach(label => {
                 const el = label.getElement();
@@ -1319,7 +1455,6 @@
                         el.style.display = 'block';
                         el.style.opacity = '1';
                         el.style.visibility = 'visible';
-                        el.style.backgroundColor = 'rgba(47, 62, 158, 0.85)';
                     } else {
                         el.style.display = 'none';
                         el.style.opacity = '0';
@@ -1327,15 +1462,8 @@
                     }
                 }
             });
-
-            // 🔴 DEBUG
-            const visibleCount = ownerLabels.filter(label => {
-                const el = label.getElement();
-                return el && el.style.display !== 'none';
-            }).length;
-            console.log('📊 Visible labels:', visibleCount);
         }
-        // 🔴🔴🔴 YEH FUNCTION ADD KARO - loadGeoJSON ke BAAD 🔴🔴🔴
+
         function changeBaseMap(mapType) {
             if (!map) return;
 
@@ -1352,7 +1480,6 @@
                     maxZoom: 19
                 }).addTo(map);
 
-                // 🔴🔴🔴 Labels visibility update karo 🔴🔴🔴
                 setTimeout(function () {
                     updateOwnerLabelVisibility();
                 }, 300);
@@ -1361,9 +1488,121 @@
             }
         }
 
+        // ===== CHARTS UPDATE =====
+        function updateCharts() {
+            let displayedFeatures = allFeatures.filter(f => f.properties._layerType === 'parcels');
+
+            const sf = document.getElementById('statusFilter').value;
+            const of = document.getElementById('ownerFilter').value.toLowerCase().trim();
+            const pf = document.getElementById('parcelFilter').value.toLowerCase().trim();
+            const af = document.getElementById('addressFilter').value.toLowerCase().trim();
+
+            if (sf !== 'ALL' || of || pf || af) {
+                displayedFeatures = displayedFeatures.filter(f => {
+                    const p = f.properties;
+                    const s = sf === 'ALL' || p.Status === sf;
+                    const o = !of || (p.OWNER || p.owner || '').toLowerCase().includes(of);
+                    const pa = !pf || (p.PARCEL || p.parcel || '').toLowerCase().includes(pf);
+                    const a = !af || (p.ADDRESS || p.address || '').toLowerCase().includes(af);
+                    return s && o && pa && a;
+                });
+            }
+
+            const inProgress = displayedFeatures.filter(f => f.properties.Status === 'IN PROGRESS').length;
+            const completed = displayedFeatures.filter(f => f.properties.Status === 'COMPLETED').length;
+
+            const labels = ['In Progress', 'Completed'];
+            const dataValues = [inProgress, completed];
+            const colors = ['#A34828', '#4EA9CD'];
+            const borderColors = ['#7a3420', '#3a8aa8'];
+
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            if (pieChartInstance) pieChartInstance.destroy();
+            pieChartInstance = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: colors,
+                        borderColor: borderColors,
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                    return percentage + '%';  // 🔴 SIRF PERCENTAGE
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%',
+                    animation: { animateRotate: true, duration: 600 }
+                }
+            });
+
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            if (barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: colors,
+                        borderColor: borderColors,
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        barThickness: 32
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(58, 35, 18, 0.06)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: { size: 8, family: 'Inter' },
+                                color: 'rgba(58, 35, 18, 0.4)',
+                                stepSize: Math.max(1, Math.ceil(Math.max(inProgress, completed) / 5))
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 8, family: 'Inter', weight: '700' },
+                                color: 'rgba(58, 35, 18, 0.5)'
+                            }
+                        }
+                    },
+                    animation: { duration: 500 }
+                }
+            });
+        }
+
+
+
         async function loadAllLayers() {
             try {
-                showLoading('Loading...');
+                showLoading('Loading data...');
                 const [bd, pd, sd] = await Promise.all([
                     loadGeoJSON(CONFIG.BOUNDARY_URL, 'boundary'),
                     loadGeoJSON(CONFIG.PARCELS_URL, 'parcels'),
@@ -1371,7 +1610,9 @@
                 ]);
 
                 sheetDataMap = sd;
-                let bf = bd.features, pf = pd.features, mc = 0;
+                let bf = bd.features,
+                    pf = pd.features,
+                    mc = 0;
 
                 pf.forEach(f => {
                     const oid = getObjectId(f.properties);
@@ -1382,7 +1623,7 @@
                         f.properties.ADDRESS = r.address || f.properties.ADDRESS || '';
                         f.properties.SIGNER = r.signer || f.properties.SIGNER || '';
                         f.properties.PARCEL = r.parcel || f.properties.PARCEL || '';
-                        f.properties.LINK = r.link || ''; // 🔴 LINK ADD KARO
+                        f.properties.LINK = r.link || '';
                         mc++;
                     }
                 });
@@ -1399,7 +1640,7 @@
                             owner: f.properties.OWNER || '',
                             parcel: f.properties.PARCEL || '',
                             status: f.properties.Status || 'IN PROGRESS',
-                            link: f.properties.LINK || '' // 🔴 LINK ADD KARO
+                            link: f.properties.LINK || ''
                         });
                     }
                 });
@@ -1409,19 +1650,19 @@
                 renderLayer();
                 updateStats();
 
-                // 🔴🔴🔴 OWNER LABELS ADD KARO 🔴🔴🔴
                 addOwnerLabels();
 
-                // 🔴🔴🔴 PEHLA VISIBILITY CHECK 🔴🔴🔴
                 setTimeout(function () {
                     updateOwnerLabelVisibility();
                 }, 500);
 
-                hideLoading();
-                showToast('✅ ' + mc + ' parcels synced');
+                setTimeout(function () {
+                    updateCharts();
+                }, 300);
 
-                // 🔴 DEBUG: Check karo link aaya ya nahi
-                console.log('🔗 First feature LINK:', allFeatures.find(f => f.properties._layerType === 'parcels')?.properties?.LINK);
+                hideLoading();
+                showToast('✅ ' + mc + ' parcels loaded');
+
             } catch (e) {
                 hideLoading();
                 showToast('❌ ' + e.message, true);
@@ -1430,17 +1671,23 @@
 
 
 
-        // 🔴🔴🔴 INTERCONNECTED SUGGESTIONS
-
         function showSuggestions(type) {
 
             let input, suggestionsDiv, data;
 
-            if (type === 'owner') { input = document.getElementById('ownerFilter'); suggestionsDiv = document.getElementById('ownerSuggestions'); data = allOwners }
-
-            else if (type === 'parcel') { input = document.getElementById('parcelFilter'); suggestionsDiv = document.getElementById('parcelSuggestions'); data = allParcels }
-
-            else if (type === 'address') { input = document.getElementById('addressFilter'); suggestionsDiv = document.getElementById('addressSuggestions'); data = allAddresses }
+            if (type === 'owner') {
+                input = document.getElementById('ownerFilter');
+                suggestionsDiv = document.getElementById('ownerSuggestions');
+                data = allOwners
+            } else if (type === 'parcel') {
+                input = document.getElementById('parcelFilter');
+                suggestionsDiv = document.getElementById('parcelSuggestions');
+                data = allParcels
+            } else if (type === 'address') {
+                input = document.getElementById('addressFilter');
+                suggestionsDiv = document.getElementById('addressSuggestions');
+                data = allAddresses
+            }
 
 
 
@@ -1460,15 +1707,11 @@
 
 
 
-                // Owner selected ho to sirf us owner ka data
-
                 if (ownerValue && type !== 'owner' && item.owner !== ownerValue)
 
                     return false;
 
 
-
-                // Parcel selected ho to sirf us parcel ka data
 
                 if (parcelValue && type !== 'parcel' && item.parcel !== parcelValue)
 
@@ -1476,15 +1719,11 @@
 
 
 
-                // Address selected ho to sirf us address ka data
-
                 if (addressValue && type !== 'address' && item.address !== addressValue)
 
                     return false;
 
 
-
-                // Jo textbox open hai usmein typing search
 
                 if (value && !item.value.toLowerCase().includes(value))
 
@@ -1514,21 +1753,19 @@
 
                     let sub = '';
 
-                    if (type === 'owner') sub = '📋 ' + (item.parcel || 'N/A') + ' | 📍 ' + (item.address ? item.address.substring(0, 30) : 'N/A');
+                    if (type === 'owner') sub = '📋 ' + (item.parcel || 'N/A') + ' | 📍 ' + (item.address ? item.address
+                        .substring(0, 30) : 'N/A');
 
-                    else if (type === 'parcel') sub = '👤 ' + (item.owner || 'N/A') + ' | 📍 ' + (item.address ? item.address.substring(0, 30) : 'N/A');
+                    else if (type === 'parcel') sub = '👤 ' + (item.owner || 'N/A') + ' | 📍 ' + (item.address ? item
+                        .address.substring(0, 30) : 'N/A');
 
                     else if (type === 'address') sub = '👤 ' + (item.owner || 'N/A') + ' | 📋 ' + (item.parcel || 'N/A');
 
 
 
-                    // 🔴 DIV use karo taake neeche line mein aaye
-
                     div.innerHTML = '<div class="main">' + main + '</div><div class="sub">' + sub + '</div>';
 
 
-
-                    // 🔴 CLICK = SIRF APNA BOX FILL KARO
 
                     div.addEventListener('mousedown', function (e) {
 
@@ -1537,8 +1774,6 @@
                         e.stopPropagation();
 
 
-
-                        // 🔴 SIRF wahi input fill karo jispe type kiya hai
 
                         input.value = item.value;
 
@@ -1584,15 +1819,16 @@
 
 
 
-            // 🔴 Purani layer aur timeout clear karo
-
             if (window.hlTimeout) clearTimeout(window.hlTimeout);
 
             if (window.zoomTimeout) clearTimeout(window.zoomTimeout);
 
 
 
-            if (currentLayer) { map.removeLayer(currentLayer); currentLayer = null; }
+            if (currentLayer) {
+                map.removeLayer(currentLayer);
+                currentLayer = null;
+            }
 
 
 
@@ -1608,21 +1844,18 @@
 
             currentLayer = L.geoJSON(
 
-                { type: 'FeatureCollection', features: fts },
-
-                { style: getFeatureStyle, onEachFeature: onEachFeature }
+                { type: 'FeatureCollection', features: fts }, { style: getFeatureStyle, onEachFeature: onEachFeature }
 
             ).addTo(map);
 
 
 
-            // 🔴 Zoom sirf ek baar, debounce ke saath
-
             window.zoomTimeout = setTimeout(() => {
 
                 currentLayer.eachLayer(function (l) {
 
-                    if (l.feature && getObjectId(l.feature.properties) === sid && l.feature.properties._layerType === 'parcels') {
+                    if (l.feature && getObjectId(l.feature.properties) === sid && l.feature.properties
+                        ._layerType === 'parcels') {
 
                         try {
 
@@ -1638,11 +1871,18 @@
 
 
 
-                        // Highlight
-
                         highlightedFeature = l.feature;
 
-                        l.setStyle({ color: '#FF0000', weight: 5, fillOpacity: 0.2, fillColor: '#FF0000' });
+                        // 🔴 HIGHLIGHT COLOR USI STATUS KE HISAB SE
+                        const status = l.feature.properties.Status || 'IN PROGRESS';
+                        const highlightColor = status === 'IN PROGRESS' ? '#A34828' : '#4EA9CD';
+
+                        l.setStyle({
+                            color: highlightColor,
+                            weight: 5,
+                            fillOpacity: 0.15,
+                            fillColor: highlightColor
+                        });
 
                         l.bringToFront();
 
@@ -1669,8 +1909,11 @@
 
 
             updateStats();
+            setTimeout(function () {
+                updateCharts();
+            }, 200);
 
-            showToast('📍 Click polygon for popup');
+            showToast('📍 Click polygon for details');
 
         }
 
@@ -1690,26 +1933,64 @@
 
             if (sf === 'ALL' && !of && !pf && !af) { renderLayer(); return }
 
-            if (currentLayer) { map.removeLayer(currentLayer); currentLayer = null }
+            if (currentLayer) {
+                map.removeLayer(currentLayer);
+                currentLayer = null
+            }
 
-            let ftr = allFeatures.filter(f => { const p = f.properties; if (p._layerType === 'boundary') return true; const s = sf === 'ALL' || p.Status === sf; const o = !of || (p.OWNER || p.owner || '').toLowerCase().includes(of); const pa = !pf || (p.PARCEL || p.parcel || '').toLowerCase().includes(pf); const a = !af || (p.ADDRESS || p.address || '').toLowerCase().includes(af); return s && o && pa && a });
+            let ftr = allFeatures.filter(f => {
+                const p = f.properties; if (p._layerType === 'boundary') return true;
+                const s = sf === 'ALL' || p.Status === sf; const o = !of || (p.OWNER || p.owner || '').toLowerCase()
+                    .includes(of); const pa = !pf || (p.PARCEL || p.parcel || '').toLowerCase().includes(pf);
+                const a = !af || (p.ADDRESS || p.address || '').toLowerCase().includes(af); return s && o && pa && a
+            });
 
             if (ftr.length === 0) { showToast('⚠️ No matches', true); return }
 
-            currentLayer = L.geoJSON({ type: 'FeatureCollection', features: ftr }, { style: getFeatureStyle, onEachFeature: onEachFeature }).addTo(map);
+            currentLayer = L.geoJSON({ type: 'FeatureCollection', features: ftr }, {
+                style: getFeatureStyle,
+                onEachFeature: onEachFeature
+            }).addTo(map);
 
-            try { const b = currentLayer.getBounds(); if (b.isValid()) map.fitBounds(b, { padding: [50, 50], maxZoom: 16 }) } catch (e) { map.setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM) }
+            try {
+                const b = currentLayer.getBounds(); if (b.isValid()) map.fitBounds(b, {
+                    padding: [50, 50],
+                    maxZoom: 16
+                })
+            } catch (e) { map.setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM) }
 
-            highlightedFeature = null; updateStats()
-
+            highlightedFeature = null;
+            updateStats();
+            setTimeout(function () {
+                updateCharts();
+            }, 150);
         }
 
 
 
-        function renderLayer() { if (!isDataLoaded || allFeatures.length === 0) return; if (currentLayer) { map.removeLayer(currentLayer); currentLayer = null } selectedFeatures = []; highlightedFeature = null; currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, { style: getFeatureStyle, onEachFeature: onEachFeature }).addTo(map); try { const b = currentLayer.getBounds(); if (b.isValid()) map.fitBounds(b, { padding: [40, 40] }) } catch (e) { map.setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM) } updateStats() }
+        function renderLayer() {
+            if (!isDataLoaded || allFeatures.length === 0) return;
+            if (currentLayer) {
+                map.removeLayer(currentLayer);
+                currentLayer = null
+            }
+            selectedFeatures = [];
+            highlightedFeature = null;
+            currentLayer = L.geoJSON({ type: 'FeatureCollection', features: allFeatures }, {
+                style: getFeatureStyle,
+                onEachFeature: onEachFeature
+            }).addTo(map);
+            try { const b = currentLayer.getBounds(); if (b.isValid()) map.fitBounds(b, { padding: [40, 40] }) } catch (
+            e) { map.setView(CONFIG.DEFAULT_VIEW, CONFIG.DEFAULT_ZOOM) }
+            updateStats();
+            setTimeout(function () {
+                updateCharts();
+            }, 150);
+        }
 
 
 
+        // ===== FEATURE STYLE - BOUNDARY RED, COMPLETED #4EA9CD =====
         function getFeatureStyle(feature) {
             const lt = feature.properties._layerType;
             const st = feature.properties.Status || 'IN PROGRESS';
@@ -1718,18 +1999,17 @@
                 return {
                     fillColor: 'transparent',
                     color: '#FF0000',
-                    weight: 2.5,
+                    weight: 4,
                     opacity: 1,
                     fillOpacity: 0
                 };
             }
 
-            // 🔴 HIGHLIGHT CHECK HATAYA - ab sirf normal style return karega
-            const c = st === 'IN PROGRESS' ? '#FF8C00' : st === 'COMPLETED' ? '#10B981' : '#6B7280';
+            const c = st === 'IN PROGRESS' ? '#A34828' : st === 'COMPLETED' ? '#4EA9CD' : '#6B7280';
             return {
                 fillColor: 'transparent',
                 color: c,
-                weight: 2,
+                weight: 4,
                 opacity: 1,
                 fillOpacity: 0
             };
@@ -1741,7 +2021,6 @@
 
             const ownerName = feature.properties.OWNER || feature.properties.owner || 'Unknown Owner';
 
-            // 🔴 FONT SIZE 11px - TAAKE LAMBA NAME BHI EK LINE MEIN AAYE
             layer.bindTooltip(`👤 ${ownerName}`, {
                 permanent: false,
                 direction: 'top',
@@ -1767,11 +2046,16 @@
                 if (window.hlTimeout) clearTimeout(window.hlTimeout);
 
                 highlightedFeature = feature;
+
+                // 🔴 HIGHLIGHT COLOR USI STATUS KE HISAB SE
+                const status = feature.properties.Status || 'IN PROGRESS';
+                const highlightColor = status === 'IN PROGRESS' ? '#A34828' : '#4EA9CD';
+
                 this.setStyle({
-                    color: '#FF0000',
+                    color: highlightColor,
                     weight: 5,
-                    fillOpacity: 0.2,
-                    fillColor: '#FF0000'
+                    fillOpacity: 0.15,
+                    fillColor: highlightColor
                 });
                 this.bringToFront();
                 this.openPopup();
@@ -1785,7 +2069,6 @@
                 }
             });
 
-            // HOVER
             layer.on('mouseover', function () {
                 if (hoveredLayer && hoveredLayer !== this) {
                     hoveredLayer.setStyle(getFeatureStyle(hoveredLayer.feature));
@@ -1793,7 +2076,7 @@
                 hoveredLayer = this;
                 if (highlightedFeature !== feature) {
                     const s = getFeatureStyle(feature);
-                    this.setStyle({ color: s.color, weight: 3, fillOpacity: 0.1, fillColor: s.color });
+                    this.setStyle({ color: s.color, weight: 3, fillOpacity: 0.08, fillColor: s.color });
                     this.bringToFront();
                 }
                 this.openTooltip();
@@ -1807,18 +2090,21 @@
                 this.closeTooltip();
             });
         }
+
         function createPopupContent(feature) {
             const p = feature.properties;
             const st = p.Status || 'IN PROGRESS';
-            const sc = st === 'IN PROGRESS' ? '#FF8C00' : st === 'COMPLETED' ? '#10B981' : '#6B7280';
+            const sc = st === 'IN PROGRESS' ? '#A34828' : st === 'COMPLETED' ? '#4EA9CD' : '#6B7280';
             const oid = getObjectId(p);
             const link = p.LINK || p.link || '';
 
-            let h = '<div style="min-width:220px;font-family:Inter,sans-serif">';
-            h += '<div style="background:#2F3E9E;color:white;padding:8px 12px;border-radius:6px 6px 0 0;font-weight:600;font-size:13px">📋 Property Details</div>';
-            h += '<div style="padding:12px"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+            let h = '<div style="min-width:220px;font-family:Inter,sans-serif;">';
+            h +=
+                '<div style="background:linear-gradient(135deg,#3A2312,#2a1a0a);color:#F7EFE3;padding:10px 16px;border-radius:8px 8px 0 0;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;border-bottom:2px solid #c9a84c;">';
+            h += '🏘️ Property Details</div>';
+            h += '<div style="padding:14px 16px;background:white;border-radius:0 0 8px 8px;">';
+            h += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
 
-            // 🔴 OBJECT ID HATA DIYA - SIRF YEH FIELDS
             const fields = [
                 { l: 'Address', k: 'ADDRESS' },
                 { l: 'Signer', k: 'SIGNER' },
@@ -1829,34 +2115,41 @@
             fields.forEach(f => {
                 let v = p[f.k] || p[f.k.toLowerCase()] || '';
                 if (v) {
-                    h += '<tr><td style="padding:4px 8px;font-weight:600;color:#4B5563">' + f.l + ':</td><td style="padding:4px 8px">' + v + '</td></tr>';
+                    h +=
+                        '<tr><td style="padding:4px 8px;font-weight:700;color:#3A2312;font-size:11px;">' + f.l +
+                        ':</td><td style="padding:4px 8px;font-weight:500;color:#2d3748;">' + v + '</td></tr>';
                 }
             });
 
-            // 🔴 LINK ROW - Agar link hai toh dikhao
             if (link && link.trim() !== '') {
-                h += '<tr><td style="padding:4px 8px;font-weight:600;color:#4B5563">🔗 Link:</td>';
-                h += '<td style="padding:4px 8px">';
-                h += '<a href="' + link + '" target="_blank" style="color:#2F3E9E;font-weight:600;text-decoration:none;border-bottom:1px solid #2F3E9E;">';
+                h +=
+                    '<tr><td style="padding:4px 8px;font-weight:700;color:#3A2312;font-size:11px;">🔗 Link:</td>';
+                h += '<td style="padding:4px 8px;">';
+                h +=
+                    '<a href="' + link + '" target="_blank" style="color:#A34828;font-weight:700;text-decoration:none;border-bottom:2px solid #c9a84c;">';
                 h += '📄 Open Sheet';
                 h += '</a>';
                 h += '</td></tr>';
             }
 
-            h += '<tr><td style="padding:4px 8px;font-weight:600;color:#4B5563">Status:</td><td style="padding:4px 8px"><span style="color:' + sc + ';font-weight:bold">' + st + '</span></td></tr>';
+            h +=
+                '<tr><td style="padding:4px 8px;font-weight:700;color:#3A2312;font-size:11px;">Status:</td><td style="padding:4px 8px;"><span style="color:' +
+                sc + ';font-weight:800;font-size:13px;">' + st + '</span></td></tr>';
             h += '</table>';
 
-            // 🔴 Buttons - IN PROGRESS + COMPLETED + SAVE
-            h += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid #E5E7EB;display:flex;gap:6px;justify-content:center;flex-wrap:wrap">';
-            h += '<button onclick="updateFeatureStatus(\'' + oid + '\',\'IN PROGRESS\')" style="background:#FF8C00;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">⏳ IN PROGRESS</button>';
-            h += '<button onclick="updateFeatureStatus(\'' + oid + '\',\'COMPLETED\')" style="background:#10B981;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">✅ COMPLETED</button>';
-            h += '<button onclick="saveSingleAndClose(\'' + oid + '\')" style="background:#2F3E9E;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">💾 Save</button>';
+            h +=
+                '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">';
+            h +=
+                '<button onclick="updateFeatureStatus(\'' + oid + '\',\'IN PROGRESS\')" style="background:#A34828;color:#F7EFE3;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;transition:all 0.2s;">⏳ In Progress</button>';
+            h +=
+                '<button onclick="updateFeatureStatus(\'' + oid + '\',\'COMPLETED\')" style="background:#4EA9CD;color:white;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;transition:all 0.2s;">✅ Completed</button>';
+            h +=
+                '<button onclick="saveSingleAndClose(\'' + oid + '\')" style="background:#c9a84c;color:#3A2312;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.3px;transition:all 0.2s;">💾 Save</button>';
             h += '</div>';
 
             h += '</div></div>';
             return h;
         }
-        // 🔴 NAYA FUNCTION - Popup ke Save button ke liye
 
         window.saveSingleAndClose = function (oid) {
 
@@ -1870,7 +2163,8 @@
 
         window.updateFeatureStatus = function (oid, st) {
             const sid = oid.toString().trim();
-            const f = allFeatures.find(ft => getObjectId(ft.properties) === sid && ft.properties._layerType === 'parcels');
+            const f = allFeatures.find(ft => getObjectId(ft.properties) === sid && ft.properties._layerType ===
+                'parcels');
             if (f) {
                 f.properties.Status = st;
                 hasChanges = true;
@@ -1878,39 +2172,113 @@
                     currentLayer.eachLayer(function (l) {
                         if (l.feature === f) {
                             l.setStyle(getFeatureStyle(f));
-                            // 🔴 Popup content update + DOBARA OPEN
                             l.setPopupContent(createPopupContent(f));
                             l.openPopup();
                         }
                     });
                 }
                 updateStats();
-                showToast('✅ ' + st + ' | 💾 Save to update Sheet');
+                setTimeout(function () {
+                    updateCharts();
+                }, 150);
+                showToast('✅ ' + st + ' | Save to update Sheet');
             } else {
                 showToast('❌ Not found!', true);
             }
         };
 
 
-        function updateStats() { const pf = allFeatures.filter(f => f.properties._layerType === 'parcels'); document.getElementById('totalCount').textContent = pf.length; document.getElementById('inprogressCount').textContent = pf.filter(f => f.properties.Status === 'IN PROGRESS').length; document.getElementById('completedCount').textContent = pf.filter(f => f.properties.Status === 'COMPLETED').length }
+        function updateStats() {
+            const pf = allFeatures.filter(f => f.properties._layerType === 'parcels');
+            document.getElementById('totalCount').textContent = pf.length;
+            document.getElementById('inprogressCount').textContent = pf.filter(f => f.properties.Status === 'IN PROGRESS')
+                .length;
+            document.getElementById('completedCount').textContent = pf.filter(f => f.properties.Status === 'COMPLETED')
+                .length;
+        }
 
 
 
-        function clearAllFilters() { document.getElementById('statusFilter').value = 'ALL'; document.getElementById('ownerFilter').value = ''; document.getElementById('parcelFilter').value = ''; document.getElementById('addressFilter').value = ''; document.querySelectorAll('.suggestions-dropdown').forEach(el => el.classList.remove('show')); activeSuggestionsDiv = null; highlightedFeature = null; renderLayer(); showToast('✅ Cleared') }
+        function clearAllFilters() {
+            document.getElementById('statusFilter').value = 'ALL';
+            document.getElementById('ownerFilter').value = '';
+            document.getElementById('parcelFilter').value = '';
+            document.getElementById('addressFilter').value = '';
+            document.querySelectorAll('.suggestions-dropdown').forEach(el => el.classList.remove('show'));
+            activeSuggestionsDiv = null;
+            highlightedFeature = null;
+            renderLayer();
+            setTimeout(function () {
+                updateCharts();
+            }, 150);
+            showToast('✅ Cleared')
+        }
 
-        function markSelectedAs(st) { if (selectedFeatures.length === 0) { showToast('⚠️ Select features first', true); return } selectedFeatures.forEach(f => f.properties.Status = st); hasChanges = true; applyFilters(); updateStats(); showToast('✅ ' + selectedFeatures.length + ' → ' + st); selectedFeatures = [] }
+        function markSelectedAs(st) {
+            if (selectedFeatures.length === 0) { showToast('⚠️ Select features first', true); return }
+            selectedFeatures.forEach(f => f.properties.Status = st);
+            hasChanges = true;
+            applyFilters();
+            updateStats();
+            setTimeout(function () {
+                updateCharts();
+            }, 150);
+            showToast('✅ ' + selectedFeatures.length + ' → ' + st);
+            selectedFeatures = []
+        }
 
-        function clearSelection() { selectedFeatures = []; if (currentLayer) currentLayer.eachLayer(l => l.setStyle(getFeatureStyle(l.feature))) }
+        function clearSelection() {
+            selectedFeatures = []; if (currentLayer) currentLayer.eachLayer(l => l.setStyle(
+                getFeatureStyle(l.feature)))
+        }
 
-        function resetChanges() { if (!hasChanges) { showToast('ℹ️ No changes'); return } allFeatures.forEach(f => { if (f.properties._layerType === 'parcels') { const oid = getObjectId(f.properties); if (oid && originalData.has(oid)) f.properties.Status = originalData.get(oid).status } }); hasChanges = false; selectedFeatures = []; highlightedFeature = null; renderLayer(); updateStats(); showToast('🔄 Reset') }
+        function resetChanges() {
+            if (!hasChanges) { showToast('ℹ️ No changes'); return }
+            allFeatures.forEach(f => {
+                if (f.properties._layerType === 'parcels') {
+                    const oid = getObjectId(f.properties);
+                    if (oid && originalData.has(oid)) f.properties.Status = originalData.get(oid).status
+                }
+            });
+            hasChanges = false;
+            selectedFeatures = [];
+            highlightedFeature = null;
+            renderLayer();
+            updateStats();
+            setTimeout(function () {
+                updateCharts();
+            }, 150);
+            showToast('🔄 Reset')
+        }
 
         function saveChanges() { if (!hasChanges) { showToast('ℹ️ No changes'); return } saveToSheet() }
 
 
 
-        document.addEventListener('mousedown', function (e) { if (!e.target.closest('.suggestions-wrapper')) { document.querySelectorAll('.suggestions-dropdown').forEach(el => el.classList.remove('show')); activeSuggestionsDiv = null } });
+        document.addEventListener('mousedown', function (e) {
+            if (!e.target.closest('.suggestions-wrapper')) {
+                document
+                    .querySelectorAll('.suggestions-dropdown').forEach(el => el.classList.remove('show'));
+                activeSuggestionsDiv = null
+            }
+        });
 
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { document.querySelectorAll('.suggestions-dropdown').forEach(el => el.classList.remove('show')); activeSuggestionsDiv = null; clearSelection(); highlightedFeature = null; if (currentLayer) currentLayer.eachLayer(l => l.setStyle(getFeatureStyle(l.feature))) } if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveChanges() } if (e.ctrlKey && e.key === 'r') { e.preventDefault(); resetChanges() } });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll(
+                    '.suggestions-dropdown').forEach(el => el.classList.remove('show'));
+                activeSuggestionsDiv = null;
+                clearSelection();
+                highlightedFeature = null; if (currentLayer) currentLayer.eachLayer(l => l.setStyle(getFeatureStyle(l
+                    .feature)))
+            } if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveChanges()
+            } if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                resetChanges()
+            }
+        });
 
 
 
@@ -1918,25 +2286,23 @@
             initMap();
             loadAllLayers();
 
-            // 🔴🔴🔴 YEH LINE ADD KARO 🔴🔴🔴
             document.getElementById('baseMapSelector').addEventListener('change', function (e) {
                 changeBaseMap(e.target.value);
             });
 
             document.getElementById('clearFiltersBtn').addEventListener('click', clearAllFilters);
-            document.getElementById('markInProgress').addEventListener('click', () => markSelectedAs('IN PROGRESS'));
-            document.getElementById('markCompleted').addEventListener('click', () => markSelectedAs('COMPLETED'));
+            document.getElementById('markInProgress').addEventListener('click', () => markSelectedAs(
+                'IN PROGRESS'));
+            document.getElementById('markCompleted').addEventListener('click', () => markSelectedAs(
+                'COMPLETED'));
             document.getElementById('clearSelection').addEventListener('click', clearSelection);
             document.getElementById('resetChanges').addEventListener('click', resetChanges);
             document.getElementById('saveChanges').addEventListener('click', saveChanges);
         });
 
-        console.log('🏘️ FINAL FIXED - All 3 Filters Interconnected');
-
+        console.log('🏘️ Coronado SWCD - Boundary RED, Completed #4EA9CD, Dynamic Charts!');
     </script>
 
 </body>
-
-
 
 </html>
